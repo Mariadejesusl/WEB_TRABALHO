@@ -49,13 +49,24 @@ function savePrivSettings() {
 
 /* ── ALTERAR SENHA ── */
 function openPasswordModal() {
-    document.getElementById('password-modal').style.display = 'flex';
+    const modal = document.getElementById('password-modal');
+    modal.classList.add('show');
+    modal.style.display = 'flex';
 }
 
 function closePasswordModal() {
-    document.getElementById('password-modal').style.display = 'none';
+    const modal = document.getElementById('password-modal');
+    modal.classList.remove('show');
+    modal.style.display = 'none';
     document.getElementById('password-form').reset();
 }
+
+// Fechar modal ao clicar fora
+document.getElementById('password-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'password-modal') {
+        closePasswordModal();
+    }
+});
 
 document.getElementById('password-form').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -90,33 +101,99 @@ document.getElementById('password-form').addEventListener('submit', (e) => {
 
 /* ── ZONA DE PERIGO ── */
 function deactivateAccount() {
-    if (confirm('Tem certeza que deseja desativar sua conta? Você poderá reativá-la ao fazer login novamente.')) {
-        Layout.showSuccessModal(
-            'Conta Desativada',
-            'Sua conta foi desativada com sucesso. Para reativá-la, basta fazer login a qualquer momento.',
-            () => {
-                State.logout();
-                window.location.href = 'login.html';
+    // Mostrar modal personalizado com tema do sistema
+    Layout.showSuccessModal(
+        'Desativar Conta?',
+        'Sua conta ficará oculta, mas você poderá reativá-la ao fazer login novamente. Tem certeza que deseja continuar?',
+        () => {
+            // Callback para confirmar desativação
+            const allUsers = State.getUsers();
+            const idx = allUsers.findIndex(u => u.email === user.email);
+            if (idx !== -1) {
+                allUsers[idx].ativo = false;
+                State.setUsers(allUsers);
             }
-        );
-    }
+            
+            Layout.showSuccessModal(
+                'Conta Desativada',
+                'Sua conta foi desativada com sucesso. Para reativá-la, basta fazer login a qualquer momento.',
+                () => {
+                    State.logout();
+                    window.location.href = 'login.html';
+                }
+            );
+        },
+        'Desativar'
+    );
 }
 
 function deleteAccount() {
-    if (confirm('ATENÇÃO: Esta ação é irreversível. Todos os seus dados serão excluídos permanentemente. Deseja continuar?')) {
-        // Remover do array de usuários
-        const allUsers = State.getUsers().filter(u => u.email !== user.email);
-        State.setUsers(allUsers);
-        
-        Layout.showSuccessModal(
-            'Conta Excluída',
-            'Sua conta e todos os seus dados foram removidos permanentemente do sistema.',
-            () => {
-                State.logout();
-                window.location.href = 'index.html';
-            }
-        );
-    }
+    // Mostrar modal personalizado com tema do sistema para confirmação
+    showDeleteConfirmationModal(
+        'Excluir Conta Permanentemente?',
+        'Esta ação é irreversível. Todos os seus dados, projetos, eventos e conexões serão removidos permanentemente do sistema. Tem certeza que deseja continuar?',
+        () => {
+            // Callback para confirmar exclusão
+            const allUsers = State.getUsers().filter(u => u.email !== user.email);
+            State.setUsers(allUsers);
+            
+            Layout.showSuccessModal(
+                'Conta Excluída',
+                'Sua conta e todos os seus dados foram removidos permanentemente do sistema.',
+                () => {
+                    State.logout();
+                    window.location.href = 'index.html';
+                }
+            );
+        },
+        'Excluir Permanentemente'
+    );
+}
+
+/* ── MODAL DE CONFIRMAÇÃO PARA EXCLUSÃO (COM TEMA VERMELHO) ── */
+function showDeleteConfirmationModal(title, message, callback, buttonText = 'Excluir') {
+    // Remover modal existente se houver
+    const existing = document.getElementById('delete-confirm-modal');
+    if (existing) existing.remove();
+
+    const modalHtml = `
+        <div id="delete-confirm-modal" class="modal" style="display: flex; background: rgba(14,14,16,0.7); backdrop-filter: blur(8px); z-index: 9999; position: fixed; inset: 0; justify-content: center; align-items: center;">
+            <div class="modal-content" style="max-width: 400px; height: auto; border-radius: 24px; text-align: center; padding: 40px 32px; margin: auto; background: #fff; box-shadow: 0 20px 50px rgba(0,0,0,0.2);">
+                <div style="width: 80px; height: 80px; background: #ffebee; color: #e53935; border-radius: 50%; display: grid; place-items: center; margin: 0 auto 24px;">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 4 21 4 23 6 23 20a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V6"></polyline><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line><line x1="5" y1="7" x2="22" y2="7"></line></svg>
+                </div>
+                <h2 style="font-size: 24px; margin-bottom: 12px; color: #1a1a1f; font-family: 'Sora', sans-serif;">${title}</h2>
+                <p style="color: #4a4a55; margin-bottom: 32px; line-height: 1.5; font-size: 15px;">${message}</p>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button id="cancel-delete-btn" class="btn btn-ghost" style="flex: 1; height: 48px; font-size: 16px; border-radius: 12px; color: var(--ink); font-weight: 600;">Cancelar</button>
+                    <button id="confirm-delete-btn" class="btn" style="flex: 1; height: 48px; font-size: 16px; border-radius: 12px; background: #e53935; color: #fff; font-weight: 600;">
+                        ${buttonText}
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    const cancelBtn = document.getElementById('cancel-delete-btn');
+    const confirmBtn = document.getElementById('confirm-delete-btn');
+    const modal = document.getElementById('delete-confirm-modal');
+
+    cancelBtn.onclick = () => {
+        modal.remove();
+    };
+
+    confirmBtn.onclick = () => {
+        modal.remove();
+        if (callback) callback();
+    };
+
+    // Fechar ao clicar fora
+    modal.onclick = (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    };
 }
 
 /* ── RESTAURA PREFERÊNCIAS SALVAS ── */
