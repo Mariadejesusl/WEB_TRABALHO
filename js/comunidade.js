@@ -638,19 +638,92 @@ function markAllRead() {
 /* ─── POST OPTIONS ────────────────────────── */
 
 function postMenu(id) {
+  // Fechar qualquer dropdown aberto
+  document.querySelectorAll('.post-dropdown-menu').forEach(m => m.remove());
+  
+  const btn = document.querySelector(`#post-${id} .post-options`);
+  if (!btn) return;
+  
   const post = allPosts.find(p => p.id === id);
   const isOwn = post && post.author === CURRENT_USER.name;
-  if (isOwn) {
-    deletePost(id);
-  } else {
-    showToast('Post reportado. Obrigada!', 'success');
+
+  const menu = document.createElement('div');
+  menu.className = 'post-dropdown-menu';
+  menu.innerHTML = `
+    <button class="post-dropdown-item" onclick="editPost(${id})">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Editar
+    </button>
+    <button class="post-dropdown-item post-dropdown-item--danger" onclick="deletePost(${id})">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      Excluir
+    </button>
+  `;
+
+  btn.parentElement.style.position = 'relative';
+  btn.parentElement.appendChild(menu);
+
+  // Fechar ao clicar fora
+  setTimeout(() => {
+    document.addEventListener('click', function closeMenu(e) {
+      if (!menu.contains(e.target) && e.target !== btn) {
+        menu.remove();
+        document.removeEventListener('click', closeMenu);
+      }
+    });
+  }, 0);
+}
+
+function editPost(id) {
+  document.querySelectorAll('.post-dropdown-menu').forEach(m => m.remove());
+  const post = allPosts.find(p => p.id === id);
+  if (!post) return;
+
+  const existing = document.getElementById('edit-post-modal');
+  if (existing) existing.remove();
+
+  const modalHtml = `
+    <div id="edit-post-modal" class="modal-overlay" onclick="closeOnOverlay(event,'edit-post-modal')">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h2>Editar Post</h2>
+          <button class="modal-close" onclick="closeModal('edit-post-modal')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="form-group" style="margin-top:16px">
+          <label>Texto do post</label>
+          <textarea id="edit-post-text" rows="5" style="width:100%;padding:12px;border:1px solid var(--gray-200);border-radius:12px;font-family:inherit;font-size:14px;resize:vertical;">${post.text}</textarea>
+        </div>
+        <div class="modal-footer" style="margin-top:16px">
+          <button type="button" class="btn-ghost" onclick="closeModal('edit-post-modal')">Cancelar</button>
+          <button type="button" class="btn-primary" onclick="saveEditedPost(${id})">Salvar</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+  openModal('edit-post-modal');
+}
+
+function saveEditedPost(id) {
+  const text = document.getElementById('edit-post-text').value.trim();
+  if (!text) return;
+  const post = allPosts.find(p => p.id === id);
+  if (post) {
+    post.text = text;
+    renderFeed();
+    showToast('Post atualizado! ✏️', 'success');
   }
+  closeModal('edit-post-modal');
+  document.getElementById('edit-post-modal')?.remove();
 }
 
 function deletePost(id) {
+  if (!confirm('Tem certeza que deseja excluir este post?')) return;
   allPosts = allPosts.filter(p => p.id !== id);
   renderFeed();
-  showToast('Post removido.', 'success');
+  showToast('Post excluído.', 'success');
 }
 
 function sharePost(id) {

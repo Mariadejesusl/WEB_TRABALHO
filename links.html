@@ -32,6 +32,9 @@
     <header class="topbar">
       <h1 class="page-title">Meus Links</h1>
       <div class="topbar-actions">
+        <button class="btn btn-outline" onclick="openFolderModal()">
+          <i class="icon-folder-plus"></i> Nova Pasta
+        </button>
         <button class="btn btn-primary" onclick="openAddModal()">
           <i class="icon-plus"></i> Adicionar Link
         </button>
@@ -43,11 +46,6 @@
     </header>
 
     <div class="page-content">
-      <div class="links-header-actions" style="display: flex; gap: 10px; margin-bottom: 20px;">
-        <button class="btn btn-outline" onclick="openFolderModal()">
-          <i class="icon-folder-plus"></i> Nova Pasta
-        </button>
-      </div>
       <div id="folders-container" class="content-grid" style="margin-bottom: 30px;">
           <!-- Folders here -->
       </div>

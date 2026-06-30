@@ -6,13 +6,8 @@ const Layout = {
             return null;
         }
 
-        this.bindSidebarCollapse();
         this.initTopbar(options);
         this.highlightActiveNav(options.active || '');
-        
-        // Só exibe o card inferior se for a página de configurações
-        const sidebarFoot = document.querySelector('.sidebar-foot');
-        if (sidebarFoot) sidebarFoot.innerHTML = '';
         
         return user;
     },

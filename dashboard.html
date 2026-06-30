@@ -10,7 +10,6 @@
 </head>
 <body>
   <aside class="sidebar">
-    <button id="sidebar-toggle" class="sidebar-toggle" title="Recolher menu"><i data-lucide="panel-left"></i></button>
     <div class="logo"><span class="logo-text">She<span class="accent">Tech</span></span></div>
     <nav class="nav">
       <a href="dashboard.html" class="nav-item" data-page="dashboard"><i data-lucide="home"></i> <span class="nav-label">Início</span></a>
@@ -21,12 +20,13 @@
       <a href="links.html" class="nav-item" data-page="links"><i data-lucide="link"></i> <span class="nav-label">Links</span></a>
       <a href="configuracoes.html" class="nav-item" data-page="configuracoes"><i data-lucide="settings"></i> <span class="nav-label">Configurações</span></a>
     </nav>
-        <div class="sidebar-foot" style="margin-top:auto; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+    <div class="sidebar-foot">
       <a href="#" class="nav-item" onclick="State.logout(); window.location.href='login.html';" style="color: var(--pink-2);">
-        <i class="icon-log-out"></i> <span class="nav-label">Sair</span>
+        <i data-lucide="log-out"></i> <span class="nav-label">Sair</span>
       </a>
     </div>
   </aside>
+
 
   <main class="main">
     <header class="topbar">

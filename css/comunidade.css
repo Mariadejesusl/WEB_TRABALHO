@@ -35,6 +35,51 @@ body {
 
 /* Sidebar user styles removed */
 
+/* ─── POST DROPDOWN MENU ─────────────────── */
+.post-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1000;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(14,14,16,0.14);
+  padding: 6px;
+  min-width: 150px;
+  animation: dropdown-in 0.15s ease;
+}
+@keyframes dropdown-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.post-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  transition: background 0.15s;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: inherit;
+}
+.post-dropdown-item:hover {
+  background: var(--gray-100);
+}
+.post-dropdown-item--danger {
+  color: #e53e3e;
+}
+.post-dropdown-item--danger:hover {
+  background: #fff5f5;
+}
+
+
 /* ─── MAIN ────────────────────────────────── */
 .main {
   display: flex;
