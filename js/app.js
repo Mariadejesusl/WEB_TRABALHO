@@ -54,6 +54,23 @@ const State = {
     },
     saveLink(link) { this.saveData('links', link); },
     deleteLink(id) { this.deleteData('links', id); },
+    getFolders(email) {
+        return this.getData('folders').filter(f => f.proprietaria_id === email);
+    },
+    saveFolder(folder) { this.saveData('folders', folder); },
+    deleteFolder(id) { this.deleteData('folders', id); },
+    addNotification(email, message) {
+        const notif = {
+            id: Date.now(),
+            destinataria_id: email,
+            mensagem: message,
+            lida: false,
+            createdAt: new Date().toISOString()
+        };
+        const notifs = this.getData('notifications');
+        notifs.push(notif);
+        localStorage.setItem('notifications', JSON.stringify(notifs));
+    },
     getNotifications(email) {
         return this.getData('notifications').filter(n => n.destinataria_id === email);
     },
@@ -74,6 +91,15 @@ const UI = {
     closeModal(id) {
         const m = document.getElementById(id);
         if (m) m.style.display = 'none';
+    },
+    updateNotificationBadge() {
+        const user = State.getCurrentUser();
+        if (!user) return;
+        const notifs = State.getNotifications(user.email).filter(n => !n.lida);
+        const badge = document.querySelector('.icon-btn .dot');
+        if (badge) {
+            badge.style.display = notifs.length > 0 ? 'block' : 'none';
+        }
     }
 };
 

@@ -92,7 +92,8 @@ const Layout = {
 
         const modalHtml = `
             <div id="global-success-modal" class="modal" style="display: flex; background: rgba(14,14,16,0.7); backdrop-filter: blur(8px); z-index: 9999; position: fixed; inset: 0; justify-content: center; align-items: center;">
-                <div class="modal-content" style="max-width: 400px; height: auto; border-radius: 24px; text-align: center; padding: 40px 32px; margin: auto; background: #fff; box-shadow: 0 20px 50px rgba(0,0,0,0.2);">
+                <div class="modal-content" style="max-width: 400px; height: auto; border-radius: 24px; text-align: center; padding: 40px 32px; margin: auto; background: #fff; box-shadow: 0 20px 50px rgba(0,0,0,0.2); position: relative;">
+                    <button id="close-success-modal-x" class="modal-close-x">&times;</button>
                     <div style="width: 80px; height: 80px; background: #e6fffa; color: #38b2ac; border-radius: 50%; display: grid; place-items: center; margin: 0 auto 24px;">
                         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                     </div>
@@ -104,10 +105,22 @@ const Layout = {
         `;
         document.body.insertAdjacentHTML('beforeend', modalHtml);
 
+        const modal = document.getElementById('global-success-modal');
         const btn = document.getElementById('success-modal-btn');
+        const closeX = document.getElementById('close-success-modal-x');
+
+        const close = () => {
+            modal.remove();
+        };
+
         btn.onclick = () => {
-            document.getElementById('global-success-modal').remove();
+            close();
             if (callback) callback();
+        };
+
+        closeX.onclick = close;
+        modal.onclick = (e) => {
+            if (e.target === modal) close();
         };
     },
 

@@ -47,7 +47,7 @@
 
       <!-- COVER + HERO -->
       <div class="profile-hero card">
-        <div class="profile-cover">
+        <div class="profile-cover" id="profile-cover-bg" style="background-size: cover; background-position: center;">
           <div class="cover-gradient"></div>
         </div>
         <div class="profile-hero-body">
@@ -87,10 +87,7 @@
                 <span class="quick-stat-label">Conexões</span>
               </div>
               <div class="quick-stat-divider"></div>
-              <div class="quick-stat">
-                <span class="quick-stat-num" id="stat-conquistas">7</span>
-                <span class="quick-stat-label">Conquistas</span>
-              </div>
+
             </div>
           </div>
         </div>
@@ -105,46 +102,30 @@
           <!-- Informações -->
           <div class="card info-card">
             <h3 class="card-section-title"><i class="icon-info"></i> Sobre</h3>
+            <p id="profile-about-text" style="font-size: 14px; color: var(--gray-700); line-height: 1.6; margin-bottom: 20px; white-space: pre-wrap;">
+              Conte um pouco sobre você editando seu perfil.
+            </p>
+            
             <ul class="info-list">
               <li class="info-item">
                 <i class="icon-mail"></i>
                 <span id="profile-email">ana@shetech.com.br</span>
               </li>
               <li class="info-item">
-                <i class="icon-map-pin"></i>
-                <span id="profile-location">São Paulo, SP</span>
-              </li>
-              <li class="info-item">
                 <i class="icon-briefcase"></i>
-                <span id="profile-role">Desenvolvedora Full Stack</span>
-              </li>
-              <li class="info-item">
-                <i class="icon-building-2"></i>
-                <span id="profile-company">Freelancer</span>
+                <span id="profile-role-info">Desenvolvedora Full Stack</span>
               </li>
               <li class="info-item">
                 <i class="icon-calendar"></i>
                 <span>Membro desde <strong id="profile-date">jan. 2024</strong></span>
-              </li>
-              <li class="info-item">
-                <i class="icon-link"></i>
-                <a href="#" id="profile-website" class="info-link">anabeatriz.dev</a>
               </li>
             </ul>
 
             <div class="info-divider"></div>
 
             <!-- Links sociais -->
-            <div class="social-links">
-              <a href="#" class="social-btn" title="GitHub">
-                <i class="icon-github"></i>
-              </a>
-              <a href="#" class="social-btn" title="LinkedIn">
-                <i class="icon-linkedin"></i>
-              </a>
-              <a href="#" class="social-btn" title="Twitter / X">
-                <i class="icon-twitter"></i>
-              </a>
+            <div class="social-links" id="profile-social-links">
+              <!-- Links dinâmicos -->
             </div>
           </div>
 
@@ -163,36 +144,7 @@
             </div>
           </div>
 
-          <!-- Conquistas -->
-          <div class="card info-card">
-            <h3 class="card-section-title"><i class="icon-award"></i> Conquistas</h3>
-            <div class="badges-grid" id="badges-grid">
-              <div class="badge-item" title="Pioneira — entre as 100 primeiras membras">
-                <div class="badge-icon">🚀</div>
-                <span class="badge-label">Pioneira</span>
-              </div>
-              <div class="badge-item" title="Colaboradora — contribuiu em 5+ projetos">
-                <div class="badge-icon">🤝</div>
-                <span class="badge-label">Colaboradora</span>
-              </div>
-              <div class="badge-item" title="Mentora — orientou outras membras">
-                <div class="badge-icon">🌟</div>
-                <span class="badge-label">Mentora</span>
-              </div>
-              <div class="badge-item" title="Hackathon — vencedora de hackathon">
-                <div class="badge-icon">🏆</div>
-                <span class="badge-label">Hackathon</span>
-              </div>
-              <div class="badge-item" title="Speaker — palestrante em evento">
-                <div class="badge-icon">🎤</div>
-                <span class="badge-label">Speaker</span>
-              </div>
-              <div class="badge-item badge-locked" title="Bloqueado — continue participando!">
-                <div class="badge-icon">🔒</div>
-                <span class="badge-label">???</span>
-              </div>
-            </div>
-          </div>
+<!-- Conquistas removidas -->
 
         </aside>
 
@@ -222,7 +174,7 @@
               <button class="tl-filter-btn active" data-filter="all">Tudo</button>
               <button class="tl-filter-btn" data-filter="projeto">Projetos</button>
               <button class="tl-filter-btn" data-filter="evento">Eventos</button>
-              <button class="tl-filter-btn" data-filter="conquista">Conquistas</button>
+
             </div>
 
             <!-- Timeline -->

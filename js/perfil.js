@@ -1,214 +1,147 @@
-/* ============================================
-   SheTech — Perfil JS
-   Tabs, filtro de timeline, share, interações
-   ============================================ */
+const currentUser = Layout.init({ active: 'perfil' });
+if (!currentUser) throw new Error('auth');
 
-document.addEventListener('DOMContentLoaded', () => {
-  // Inicializa o layout compartilhado (sidebar, topbar, etc)
-  if (typeof Layout !== 'undefined') {
-    Layout.init({ active: 'perfil' });
-  }
+// Verificar se estamos visitando outro perfil
+const urlParams = new URLSearchParams(window.location.search);
+const userId = urlParams.get('user');
+let user = currentUser;
 
-  /* ─── TABS ───────────────────────────────── */
-  const tabs     = document.querySelectorAll('.profile-tab');
-  const panels   = document.querySelectorAll('.tab-panel');
-
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      const target = tab.dataset.tab;
-
-      tabs.forEach(t  => t.classList.remove('active'));
-      panels.forEach(p => p.classList.remove('active'));
-
-      tab.classList.add('active');
-      const panel = document.getElementById(`tab-${target}`);
-      if (panel) panel.classList.add('active');
-    });
-  });
-
-  /* ─── FILTRO TIMELINE ────────────────────── */
-  const filterBtns  = document.querySelectorAll('.tl-filter-btn');
-  const tlItems     = document.querySelectorAll('.tl-item');
-
-  filterBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const filter = btn.dataset.filter;
-
-      filterBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      tlItems.forEach(item => {
-        if (filter === 'all' || item.dataset.type === filter) {
-          item.classList.remove('hidden');
-        } else {
-          item.classList.add('hidden');
-        }
-      });
-
-      // reposiciona a linha vertical após filtrar
-      updateTimelineLine();
-    });
-  });
-
-  function updateTimelineLine() {
-    // Força o reflow para a pseudoclasse ::before recalcular
-    const timeline = document.querySelector('.timeline');
-    if (timeline) {
-      timeline.style.display = 'none';
-      // eslint-disable-next-line no-unused-expressions
-      timeline.offsetHeight; // força reflow
-      timeline.style.display = '';
+if (userId) {
+    const visiting = localStorage.getItem('visitingUser');
+    if (visiting) {
+        user = JSON.parse(visiting);
+        // Ajustar UI para perfil de terceiro (esconder botões de edição)
+        document.addEventListener('DOMContentLoaded', () => {
+            const editBtn = document.querySelector('.btn-edit-profile');
+            if (editBtn) editBtn.style.display = 'none';
+            const settingsBtn = document.querySelector('.btn-settings');
+            if (settingsBtn) settingsBtn.style.display = 'none';
+        });
     }
-  }
+}
 
-  /* ─── SHARE BUTTON ───────────────────────── */
-  const shareBtn = document.getElementById('share-btn');
-  if (shareBtn) {
-    shareBtn.addEventListener('click', async () => {
-      const url  = window.location.href;
-      const name = document.getElementById('profile-name')?.textContent || 'SheTech';
+function loadUserData() {
+    // Identidade
+    setText('profile-name', user.nome_completo);
+    setText('profile-user', `@${user.nome_usuario}`);
+    setText('profile-bio',  user.biografia || 'Sem biografia definida.');
+    setText('profile-email', user.email);
+    setText('profile-role-info', user.cargo || user.area || 'Membro SheTech');
+    
+    const avatar = document.getElementById('profile-avatar');
+    if (avatar) avatar.src = user.foto_perfil || 'assets/avatars/avatar.svg';
 
-      if (navigator.share) {
-        try {
-          await navigator.share({
-            title: `${name} — SheTech`,
-            url,
-          });
-        } catch {
-          // usuário cancelou
-        }
-      } else {
-        try {
-          await navigator.clipboard.writeText(url);
-          showToast('Link copiado!');
-        } catch {
-          showToast('Não foi possível copiar o link.');
-        }
-      }
-    });
-  }
-
-  /* ─── BADGE TOOLTIP ──────────────────────── */
-  // Usa o atributo title nativo; melhoria futura: tooltip personalizado
-
-  /* ─── CARREGAR DADOS DO USUÁRIO ──────────── */
-  // Integra com o sistema existente (app.js / layout.js)
-  // Se houver um usuário logado salvo em localStorage, popula os campos
-  loadUserData();
-
-  function loadUserData() {
-    try {
-      const stored = localStorage.getItem('shetech_user');
-      if (!stored) return;
-
-      const user = JSON.parse(stored);
-
-      setField('profile-name',    user.name);
-      setField('profile-user',    user.username ? `@${user.username}` : null);
-      setField('profile-bio',     user.bio);
-      setField('profile-email',   user.email);
-      setField('profile-location', user.location);
-      setField('profile-role',    user.role);
-      setField('profile-company', user.company);
-      setField('profile-website', user.website);
-      setField('profile-date',    formatDate(user.createdAt));
-
-      setField('top-name', user.name);
-
-      // Contadores
-      setField('stat-projetos',   user.projectCount  ?? '—');
-      setField('stat-eventos',    user.eventCount    ?? '—');
-      setField('stat-conexoes',   user.connections   ?? '—');
-      setField('stat-conquistas', user.badgeCount    ?? '—');
-
-      // Avatares
-      if (user.avatarUrl) {
-        setAttr('profile-avatar', 'src', user.avatarUrl);
-        setAttr('top-avatar',     'src', user.avatarUrl);
-      }
-
-      // Skills
-      if (Array.isArray(user.skills) && user.skills.length) {
-        const skillsList = document.getElementById('skills-list');
-        if (skillsList) {
-          skillsList.innerHTML = user.skills
-            .map(s => `<span class="skill-tag">${escapeHtml(s)}</span>`)
-            .join('');
-        }
-      }
-
-    } catch (e) {
-      // dados corrompidos — silencia e usa os defaults do HTML
-      console.warn('perfil.js: erro ao carregar dados do usuário', e);
+    // Capa
+    const coverBg = document.getElementById('profile-cover-bg');
+    if (coverBg && user.capa_perfil) {
+        coverBg.style.backgroundImage = `url(${user.capa_perfil})`;
     }
-  }
 
-  /* ─── HELPERS ────────────────────────────── */
-  function setField(id, value) {
-    if (!value) return;
+    // Sobre
+    const aboutText = document.getElementById('profile-about-text');
+    if (aboutText) {
+        aboutText.textContent = user.sobre || 'Nenhuma informação detalhada fornecida.';
+    }
+
+    // Skills
+    const skillsContainer = document.getElementById('skills-list');
+    if (skillsContainer && Array.isArray(user.habilidades)) {
+        skillsContainer.innerHTML = user.habilidades.map(s => `<span class="skill-tag">${s}</span>`).join('');
+    }
+
+    // Links Sociais
+    const socialContainer = document.getElementById('profile-social-links');
+    if (socialContainer) {
+        let html = '';
+        if (user.github) html += `<a href="${user.github}" class="social-btn" target="_blank" title="GitHub"><i class="icon-github"></i></a>`;
+        if (user.linkedin) html += `<a href="${user.linkedin}" class="social-btn" target="_blank" title="LinkedIn"><i class="icon-linkedin"></i></a>`;
+        if (user.instagram) html += `<a href="https://instagram.com/${user.instagram.replace('@','')}" class="social-btn" target="_blank" title="Instagram"><i class="icon-instagram"></i></a>`;
+        if (user.portfolio) html += `<a href="${user.portfolio}" class="social-btn" target="_blank" title="Portfólio"><i class="icon-globe"></i></a>`;
+        socialContainer.innerHTML = html;
+    }
+
+    // Stats (do State)
+    setText('stat-projetos', State.getProjects().filter(p => p.proprietaria_id === user.email).length);
+    setText('stat-eventos', State.getEvents().length);
+}
+
+function setText(id, val) {
     const el = document.getElementById(id);
-    if (el) el.textContent = value;
-  }
+    if (el) el.textContent = val;
+}
 
-  function setAttr(id, attr, value) {
-    if (!value) return;
-    const el = document.getElementById(id);
-    if (el) el.setAttribute(attr, value);
-  }
-
-  function formatDate(iso) {
-    if (!iso) return null;
-    try {
-      return new Intl.DateTimeFormat('pt-BR', { month: 'short', year: 'numeric' }).format(new Date(iso));
-    } catch {
-      return iso;
-    }
-  }
-
-  function escapeHtml(str) {
-    return String(str)
-      .replace(/&/g,  '&amp;')
-      .replace(/</g,  '&lt;')
-      .replace(/>/g,  '&gt;')
-      .replace(/"/g,  '&quot;');
-  }
-
-  /* ─── TOAST ──────────────────────────────── */
-  function showToast(msg, type = '') {
-    const toast = document.getElementById('toast');
-    if (!toast) return;
-
-    toast.textContent = msg;
-    toast.className   = `toast${type ? ` ${type}` : ''} show`;
-
-    clearTimeout(toast._timer);
-    toast._timer = setTimeout(() => {
-      toast.classList.remove('show');
-    }, 3000);
-  }
-
-  // expõe para uso externo (ex: app.js)
-  window.showToast = showToast;
-
-  /* ─── ANIMAÇÃO DE ENTRADA DA TIMELINE ──────── */
-  // Intersection Observer para animar os itens ao scrollar
-  if ('IntersectionObserver' in window) {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.style.opacity = '1';
-          entry.target.style.transform = 'translateX(0)';
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.15 });
-
-    tlItems.forEach((item, i) => {
-      item.style.opacity   = '0';
-      item.style.transform = 'translateX(-12px)';
-      item.style.transition = `opacity .35s ease ${i * 60}ms, transform .35s ease ${i * 60}ms`;
-      observer.observe(item);
-    });
-  }
-
+// Compartilhamento
+document.getElementById('share-btn')?.addEventListener('click', () => {
+    openShareModal();
 });
+
+function openShareModal() {
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent(`Confira o perfil de ${user.nome_completo} no SheTech!`);
+    
+    const modalHtml = `
+        <div id="share-modal" class="modal modal-detail-overlay" style="display: flex; z-index: 9999;">
+            <div class="modal-content" style="max-width: 450px; height: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>Compartilhar Perfil</h2>
+                    <button onclick="document.getElementById('share-modal').remove()" style="font-size: 24px;">&times;</button>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                    <a href="https://api.whatsapp.com/send?text=${text}%20${url}" target="_blank" class="btn btn-outline" style="flex-direction: column; gap: 5px; padding: 15px; font-size: 12px;">
+                        <i class="icon-message-circle" style="font-size: 20px; color: #25D366;"></i>
+                        <span>WhatsApp</span>
+                    </a>
+                    <a href="https://t.me/share/url?url=${url}&text=${text}" target="_blank" class="btn btn-outline" style="flex-direction: column; gap: 5px; padding: 15px; font-size: 12px;">
+                        <i class="icon-send" style="font-size: 20px; color: #0088cc;"></i>
+                        <span>Telegram</span>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=${url}" target="_blank" class="btn btn-outline" style="flex-direction: column; gap: 5px; padding: 15px; font-size: 12px;">
+                        <i class="icon-facebook" style="font-size: 20px; color: #1877F2;"></i>
+                        <span>Facebook</span>
+                    </a>
+                    <a href="https://www.instagram.com/" target="_blank" class="btn btn-outline" style="flex-direction: column; gap: 5px; padding: 15px; font-size: 12px;">
+                        <i class="icon-instagram" style="font-size: 20px; color: #E4405F;"></i>
+                        <span>Instagram</span>
+                    </a>
+                    <a href="https://discord.com/channels/@me" target="_blank" class="btn btn-outline" style="flex-direction: column; gap: 5px; padding: 15px; font-size: 12px;">
+                        <i class="icon-message-square" style="font-size: 20px; color: #5865F2;"></i>
+                        <span>Discord</span>
+                    </a>
+                    <button onclick="copyToClipboard()" class="btn btn-outline" style="flex-direction: column; gap: 5px; padding: 15px; font-size: 12px;">
+                        <i class="icon-copy" style="font-size: 20px; color: var(--pink);"></i>
+                        <span>Copiar</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function copyToClipboard() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+        if (typeof Layout !== 'undefined' && Layout.showToast) {
+            Layout.showToast('Link copiado!');
+        } else {
+            alert('Link copiado!');
+        }
+        document.getElementById('share-modal')?.remove();
+    });
+}
+
+function viewProject(id) {
+    window.location.href = 'projetos.html?id=' + id;
+}
+
+// Tabs
+document.querySelectorAll('.profile-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const target = tab.dataset.tab;
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.getElementById(`tab-${target}`)?.classList.add('active');
+    });
+});
+
+document.addEventListener('DOMContentLoaded', loadUserData);

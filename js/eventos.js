@@ -523,4 +523,11 @@
   }
   updateStats();
   renderEvents();
+
+  // Abrir detalhe se houver ID na URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const eventId = urlParams.get('id');
+  if (eventId) {
+      setTimeout(() => openDetail(eventId), 300);
+  }
 })();

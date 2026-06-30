@@ -522,4 +522,11 @@
   }
   updateStats();
   renderProjects();
+
+  // Abrir detalhe se houver ID na URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const projectId = urlParams.get('id');
+  if (projectId) {
+      setTimeout(() => openDetail(projectId), 300);
+  }
 })();

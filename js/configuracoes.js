@@ -158,7 +158,8 @@ function showDeleteConfirmationModal(title, message, callback, buttonText = 'Exc
 
     const modalHtml = `
         <div id="delete-confirm-modal" class="modal" style="display: flex; background: rgba(14,14,16,0.7); backdrop-filter: blur(8px); z-index: 9999; position: fixed; inset: 0; justify-content: center; align-items: center;">
-            <div class="modal-content" style="max-width: 400px; height: auto; border-radius: 24px; text-align: center; padding: 40px 32px; margin: auto; background: #fff; box-shadow: 0 20px 50px rgba(0,0,0,0.2);">
+            <div class="modal-content" style="max-width: 400px; height: auto; border-radius: 24px; text-align: center; padding: 40px 32px; margin: auto; background: #fff; box-shadow: 0 20px 50px rgba(0,0,0,0.2); position: relative;">
+                <button id="close-delete-modal-x" class="modal-close-x">&times;</button>
                 <div style="width: 80px; height: 80px; background: #ffebee; color: #e53935; border-radius: 50%; display: grid; place-items: center; margin: 0 auto 24px;">
                     <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 4 21 4 23 6 23 20a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V6"></polyline><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line><line x1="5" y1="7" x2="22" y2="7"></line></svg>
                 </div>
@@ -177,11 +178,15 @@ function showDeleteConfirmationModal(title, message, callback, buttonText = 'Exc
 
     const cancelBtn = document.getElementById('cancel-delete-btn');
     const confirmBtn = document.getElementById('confirm-delete-btn');
+    const closeX = document.getElementById('close-delete-modal-x');
     const modal = document.getElementById('delete-confirm-modal');
 
-    cancelBtn.onclick = () => {
+    const close = () => {
         modal.remove();
     };
+
+    cancelBtn.onclick = close;
+    closeX.onclick = close;
 
     confirmBtn.onclick = () => {
         modal.remove();

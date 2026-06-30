@@ -268,11 +268,33 @@ function addLink() {
 }
 
 function addEmoji() {
-  const emojis = ['🚀', '💜', '✨', '🎉', '💡', '🔥', '👩‍💻', '🌟', '🤝', '🙌'];
-  const e = emojis[Math.floor(Math.random() * emojis.length)];
-  const field = document.getElementById('composer-field');
-  field.innerText += e;
-  field.focus();
+    const emojis = ['🚀', '💜', '✨', '🎉', '💡', '🔥', '👩‍💻', '🌟', '🤝', '🙌', '💻', '🎨', '📚', '💪', '🌈', '⚡', '🎯', '📍', '✅', '❤️'];
+    
+    const existing = document.getElementById('emoji-picker-modal');
+    if (existing) { existing.remove(); return; }
+
+    const modalHtml = `
+        <div id="emoji-picker-modal" class="modal modal-detail-overlay" style="display: flex; z-index: 10001; background: transparent;">
+            <div class="modal-content" style="max-width: 300px; height: auto; position: absolute; bottom: 80px; left: 20px; padding: 15px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;">
+                    ${emojis.map(e => `<button onclick="insertEmoji('${e}')" style="font-size: 20px; padding: 5px; border-radius: 8px; transition: background 0.2s;" onmouseover="this.style.background='var(--pink-soft)'" onmouseout="this.style.background='transparent'">${e}</button>`).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Fechar ao clicar fora
+    document.getElementById('emoji-picker-modal').onclick = (e) => {
+        if (e.target.id === 'emoji-picker-modal') e.target.remove();
+    };
+}
+
+function insertEmoji(emoji) {
+    const field = document.getElementById('composer-field');
+    field.innerText += emoji;
+    field.focus();
+    document.getElementById('emoji-picker-modal')?.remove();
 }
 
 /* ─── COMMENTS MODAL ──────────────────────── */
@@ -370,6 +392,9 @@ function linkCardHTML(link) {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
         Abrir
       </a>
+      <button class="link-save-btn" onclick="saveToMyLinks(${link.id})" title="Salvar nos Meus Links" style="background: var(--pink-soft); color: var(--pink); border-radius: 8px; padding: 6px; display: flex; align-items: center; justify-content: center;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      </button>
       <button class="link-del-btn" onclick="deleteLink(${link.id})" title="Remover">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
       </button>
@@ -385,18 +410,76 @@ function filterLinks(cat, btn) {
 }
 
 function saveLink(e) {
-  e.preventDefault();
-  const title = document.getElementById('link-titulo').value.trim();
-  const url   = document.getElementById('link-url').value.trim();
-  const desc  = document.getElementById('link-desc').value.trim();
-  const cat   = document.getElementById('link-categoria').value;
-  if (!title || !url) return;
+    e.preventDefault();
+    const title = document.getElementById('link-titulo').value.trim();
+    const url   = document.getElementById('link-url').value.trim();
+    const desc  = document.getElementById('link-desc').value.trim();
+    const cat   = document.getElementById('link-categoria').value;
+    if (!title || !url) return;
 
-  allLinks.unshift({ id: nextLinkId++, title, url, desc, categoria: cat });
-  renderLinks(currentLinkFilter === 'todos' ? null : currentLinkFilter);
-  closeModal('link-modal');
-  document.getElementById('link-form').reset();
-  showToast('Link salvo! 🔗', 'success');
+    allLinks.unshift({ id: nextLinkId++, title, url, desc, categoria: cat });
+    renderLinks(currentLinkFilter === 'todos' ? null : currentLinkFilter);
+    closeModal('link-modal');
+    document.getElementById('link-form').reset();
+    showToast('Link postado na comunidade! 🔗', 'success');
+}
+
+function saveToMyLinks(id) {
+    const link = allLinks.find(l => l.id === id);
+    if (!link) return;
+    
+    const user = State.getCurrentUser();
+    if (!user) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    const folders = State.getFolders(user.email);
+    
+    const modalHtml = `
+        <div id="save-link-modal" class="modal modal-detail-overlay" style="display: flex; z-index: 10000;">
+            <div class="modal-content" style="max-width: 400px; height: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>Salvar nos Meus Links</h2>
+                    <button onclick="document.getElementById('save-link-modal').remove()" style="font-size: 24px;">&times;</button>
+                </div>
+                <p style="margin-bottom: 15px; font-size: 14px; color: var(--gray-700);">Escolha uma pasta para salvar: <strong>${link.title}</strong></p>
+                <div class="form-group">
+                    <label>Pasta</label>
+                    <select id="save-folder-select" class="form-control" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--gray-300);">
+                        <option value="">Nenhuma pasta (Geral)</option>
+                        ${folders.map(f => `<option value="${f.id}">${f.nome}</option>`).join('')}
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button onclick="confirmSaveToMyLinks(${id})" class="btn btn-primary" style="flex: 1;">Salvar</button>
+                    <button onclick="document.getElementById('save-link-modal').remove()" class="btn btn-outline" style="flex: 1;">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function confirmSaveToMyLinks(id) {
+    const link = allLinks.find(l => l.id === id);
+    const folderId = document.getElementById('save-folder-select').value;
+    const user = State.getCurrentUser();
+    
+    const linkData = {
+        titulo: link.title,
+        url: link.url.startsWith('http') ? link.url : `https://${link.url}`,
+        descricao: link.desc || '',
+        categoria: link.categoria || 'Comunidade',
+        folderId: folderId ? parseInt(folderId) : null,
+        proprietaria_id: user.email,
+        favorito: false
+    };
+    
+    State.saveLink(linkData);
+    showToast(`Link "${link.title}" salvo em Meus Links!`, 'success');
+    document.getElementById('save-link-modal').remove();
+    closeModal('link-detail-modal');
 }
 
 function deleteLink(id) {
@@ -459,7 +542,21 @@ function followUser(btn) {
 }
 
 function viewProfile(id) {
-  showToast('Abrindo perfil…');
+    const member = allMembers.find(m => m.id === id);
+    if (member) {
+        localStorage.setItem('visitingUser', JSON.stringify({
+            email: member.email || `member${id}@example.com`,
+            nome_completo: member.name,
+            username: member.name.toLowerCase().replace(' ', ''),
+            profissao: member.role,
+            foto_perfil: member.avatar,
+            bio: member.bio || 'Membro da comunidade SheTech.',
+            is_member: true
+        }));
+        window.location.href = 'perfil.html?user=' + id;
+    } else {
+        showToast('Perfil não encontrado.', 'error');
+    }
 }
 
 /* ─── SEARCH ──────────────────────────────── */
@@ -557,12 +654,56 @@ function deletePost(id) {
 }
 
 function sharePost(id) {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(window.location.href + '#post-' + id);
-    showToast('Link copiado para a área de transferência! 🔗', 'success');
-  } else {
-    showToast('Compartilhamento não disponível neste ambiente.');
-  }
+    const post = allPosts.find(p => p.id === id);
+    if (!post) return;
+    
+    const url = encodeURIComponent(window.location.href + '#post-' + id);
+    const text = encodeURIComponent(`Confira este post de ${post.author} na comunidade SheTech!`);
+    
+    const modalHtml = `
+        <div id="share-modal" class="modal modal-detail-overlay" style="display: flex; z-index: 9999;">
+            <div class="modal-content" style="max-width: 400px; height: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>Compartilhar Post</h2>
+                    <button onclick="document.getElementById('share-modal').remove()" style="font-size: 24px;">&times;</button>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                    <a href="https://api.whatsapp.com/send?text=${text}%20${url}" target="_blank" class="btn btn-outline" style="flex-direction: column; gap: 5px; padding: 15px; font-size: 12px;">
+                        <i class="icon-message-circle" style="font-size: 20px; color: #25D366;"></i>
+                        <span>WhatsApp</span>
+                    </a>
+                    <a href="https://t.me/share/url?url=${url}&text=${text}" target="_blank" class="btn btn-outline" style="flex-direction: column; gap: 5px; padding: 15px; font-size: 12px;">
+                        <i class="icon-send" style="font-size: 20px; color: #0088cc;"></i>
+                        <span>Telegram</span>
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=${url}" target="_blank" class="btn btn-outline" style="flex-direction: column; gap: 5px; padding: 15px; font-size: 12px;">
+                        <i class="icon-facebook" style="font-size: 20px; color: #1877F2;"></i>
+                        <span>Facebook</span>
+                    </a>
+                    <a href="https://www.instagram.com/" target="_blank" class="btn btn-outline" style="flex-direction: column; gap: 5px; padding: 15px; font-size: 12px;">
+                        <i class="icon-instagram" style="font-size: 20px; color: #E4405F;"></i>
+                        <span>Instagram</span>
+                    </a>
+                    <a href="https://discord.com/channels/@me" target="_blank" class="btn btn-outline" style="flex-direction: column; gap: 5px; padding: 15px; font-size: 12px;">
+                        <i class="icon-message-square" style="font-size: 20px; color: #5865F2;"></i>
+                        <span>Discord</span>
+                    </a>
+                    <button onclick="copyPostLink('${window.location.href + '#post-' + id}')" class="btn btn-outline" style="flex-direction: column; gap: 5px; padding: 15px; font-size: 12px;">
+                        <i class="icon-copy" style="font-size: 20px; color: var(--pink);"></i>
+                        <span>Copiar</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function copyPostLink(url) {
+    navigator.clipboard.writeText(url).then(() => {
+        showToast('Link copiado!', 'success');
+        document.getElementById('share-modal')?.remove();
+    });
 }
 
 /* ─── TOAST ───────────────────────────────── */
