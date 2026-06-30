@@ -49,10 +49,9 @@ const user = State.getCurrentUser();
         });
 
         function deleteLink(id) {
-            if (confirm('Tem certeza que deseja excluir este link?')) {
-                State.deleteLink(id);
-                renderLinks();
-            }
+            State.deleteLink(id);
+            renderLinks();
+            if (typeof Layout !== 'undefined') Layout.showToast('Link excluído!');
         }
 
         function openAddModal() {

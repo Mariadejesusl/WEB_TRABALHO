@@ -47,52 +47,81 @@ function savePrivSettings() {
     Layout.showToast('Preferências de privacidade salvas!');
 }
 
-/* ── APARÊNCIA: TEMA ── */
-function setTheme(theme) {
-    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(`theme-${theme}`)?.classList.add('active');
-    document.body.setAttribute('data-theme', theme);
-    const updated = { ...user, theme };
-    State.setCurrentUser(updated);
-    Layout.showToast(`Tema ${theme === 'dark' ? 'escuro' : 'claro'} ativado!`);
+/* ── ALTERAR SENHA ── */
+function openPasswordModal() {
+    document.getElementById('password-modal').style.display = 'flex';
 }
 
-/* ── APARÊNCIA: COR DE DESTAQUE ── */
-document.querySelectorAll('.swatch').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.swatch').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const color = btn.dataset.color;
-        document.body.setAttribute('data-accent', color);
-        const updated = { ...user, accentColor: color };
-        State.setCurrentUser(updated);
-        Layout.showToast('Cor de destaque atualizada!');
-    });
+function closePasswordModal() {
+    document.getElementById('password-modal').style.display = 'none';
+    document.getElementById('password-form').reset();
+}
+
+document.getElementById('password-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const current = document.getElementById('current-password').value;
+    const newPass = document.getElementById('new-password').value;
+    const confirm = document.getElementById('confirm-new-password').value;
+
+    if (current !== user.senha) {
+        Layout.showToast('Senha atual incorreta!', 'error');
+        return;
+    }
+
+    if (newPass !== confirm) {
+        Layout.showToast('As novas senhas não coincidem!', 'error');
+        return;
+    }
+
+    const updated = { ...user, senha: newPass };
+    State.setCurrentUser(updated);
+    
+    // Atualizar no array global de usuários também
+    const allUsers = State.getUsers();
+    const idx = allUsers.findIndex(u => u.email === user.email);
+    if (idx !== -1) {
+        allUsers[idx].senha = newPass;
+        State.setUsers(allUsers);
+    }
+
+    Layout.showToast('Senha alterada com sucesso!');
+    closePasswordModal();
 });
 
 /* ── ZONA DE PERIGO ── */
-function confirmDelete() {
-    const ok = confirm(
-        'Tem certeza que deseja excluir sua conta?\n\nEsta ação é PERMANENTE e não pode ser desfeita. Todos os seus dados serão removidos.'
-    );
-    if (ok) {
-        alert('Funcionalidade de exclusão em breve. Sua conta está segura!');
+function deactivateAccount() {
+    if (confirm('Tem certeza que deseja desativar sua conta? Você poderá reativá-la ao fazer login novamente.')) {
+        Layout.showSuccessModal(
+            'Conta Desativada',
+            'Sua conta foi desativada com sucesso. Para reativá-la, basta fazer login a qualquer momento.',
+            () => {
+                State.logout();
+                window.location.href = 'login.html';
+            }
+        );
+    }
+}
+
+function deleteAccount() {
+    if (confirm('ATENÇÃO: Esta ação é irreversível. Todos os seus dados serão excluídos permanentemente. Deseja continuar?')) {
+        // Remover do array de usuários
+        const allUsers = State.getUsers().filter(u => u.email !== user.email);
+        State.setUsers(allUsers);
+        
+        Layout.showSuccessModal(
+            'Conta Excluída',
+            'Sua conta e todos os seus dados foram removidos permanentemente do sistema.',
+            () => {
+                State.logout();
+                window.location.href = 'index.html';
+            }
+        );
     }
 }
 
 /* ── RESTAURA PREFERÊNCIAS SALVAS ── */
 document.addEventListener('DOMContentLoaded', () => {
-    // Tema
-    const savedTheme = user.theme || 'light';
-    setTheme(savedTheme);
-
-    // Cor
-    if (user.accentColor) {
-        document.querySelectorAll('.swatch').forEach(b => {
-            b.classList.toggle('active', b.dataset.color === user.accentColor);
-        });
-        document.body.setAttribute('data-accent', user.accentColor);
-    }
+    // Preferências de aparência removidas conforme solicitação
 
     // Notificações salvas
     if (user.notifPrefs) {

@@ -21,7 +21,11 @@
       <a href="links.html" class="nav-item" data-page="links"><i class="icon-link"></i> <span class="nav-label">Links</span></a>
       <a href="configuracoes.html" class="nav-item" data-page="configuracoes"><i class="icon-settings"></i> <span class="nav-label">Configurações</span></a>
     </nav>
-    <div class="sidebar-foot" style="margin-top:auto"></div>
+    <div class="sidebar-foot" style="margin-top:auto; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+      <a href="#" class="nav-item" onclick="State.logout(); window.location.href='login.html';" style="color: var(--pink-2);">
+        <i class="icon-log-out"></i> <span class="nav-label">Sair</span>
+      </a>
+    </div>
   </aside>
 
   <main class="main">
@@ -45,15 +49,18 @@
         <a href="#notificacoes" class="config-nav-item" data-section="notificacoes">
           <i class="icon-bell"></i> Notificações
         </a>
-        <a href="#aparencia"    class="config-nav-item" data-section="aparencia">
-          <i class="icon-palette"></i> Aparência
-        </a>
+<!-- Seção Aparência removida -->
         <a href="#privacidade"  class="config-nav-item" data-section="privacidade">
           <i class="icon-lock"></i> Privacidade
         </a>
         <a href="#perigo"       class="config-nav-item config-nav-danger" data-section="perigo">
           <i class="icon-triangle-alert"></i> Zona de Perigo
         </a>
+        <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--gray-200);">
+          <a href="#" class="config-nav-item" onclick="State.logout(); window.location.href='login.html';" style="color: var(--pink);">
+            <i class="icon-log-out"></i> Sair da conta
+          </a>
+        </div>
       </nav>
 
       <!-- CONTEÚDO DAS SEÇÕES -->
@@ -88,8 +95,6 @@
               <label for="settings-lang">Idioma do Sistema</label>
               <select id="settings-lang">
                 <option value="pt-BR">Português (Brasil)</option>
-                <option value="en">English</option>
-                <option value="es">Español</option>
               </select>
             </div>
             <div class="form-actions">
@@ -111,29 +116,12 @@
           <div class="config-row">
             <div class="config-row-info">
               <strong>Senha</strong>
-              <span>Última alteração: nunca</span>
+              <span>Mantenha sua senha atualizada e segura</span>
             </div>
-            <button class="btn btn-ghost" onclick="alert('Funcionalidade em breve!')">Alterar Senha</button>
+            <button class="btn btn-ghost" onclick="openPasswordModal()">Alterar Senha</button>
           </div>
 
-          <div class="config-row">
-            <div class="config-row-info">
-              <strong>Verificação em duas etapas</strong>
-              <span>Adiciona uma camada extra de proteção</span>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" id="toggle-2fa" />
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-            </label>
-          </div>
-
-          <div class="config-row">
-            <div class="config-row-info">
-              <strong>Sessões ativas</strong>
-              <span>Você está conectada neste dispositivo</span>
-            </div>
-            <button class="btn btn-ghost btn-sm" onclick="alert('Funcionalidade em breve!')">Ver sessões</button>
-          </div>
+<!-- Verificação em duas etapas e Sessões ativas removidas -->
         </section>
 
         <!-- NOTIFICAÇÕES -->
@@ -205,55 +193,7 @@
           </div>
         </section>
 
-        <!-- APARÊNCIA -->
-        <section class="config-section card" id="aparencia">
-          <div class="config-section-head">
-            <i class="icon-palette"></i>
-            <div>
-              <h2>Aparência</h2>
-              <p>Personalize como a plataforma aparece para você.</p>
-            </div>
-          </div>
-
-          <div class="config-row">
-            <div class="config-row-info">
-              <strong>Tema</strong>
-              <span>Escolha entre claro e escuro</span>
-            </div>
-            <div class="theme-toggle-group">
-              <button class="theme-btn active" id="theme-light" onclick="setTheme('light')">
-                <i class="icon-sun"></i> Claro
-              </button>
-              <button class="theme-btn" id="theme-dark" onclick="setTheme('dark')">
-                <i class="icon-moon"></i> Escuro
-              </button>
-            </div>
-          </div>
-
-          <div class="config-row">
-            <div class="config-row-info">
-              <strong>Cor de destaque</strong>
-              <span>Personaliza botões e elementos ativos</span>
-            </div>
-            <div class="color-swatches">
-              <button class="swatch swatch-pink  active" data-color="pink"   title="Rosa (padrão)"></button>
-              <button class="swatch swatch-purple"       data-color="purple" title="Roxo"></button>
-              <button class="swatch swatch-teal"         data-color="teal"   title="Verde-água"></button>
-              <button class="swatch swatch-orange"       data-color="orange" title="Laranja"></button>
-            </div>
-          </div>
-
-          <div class="config-row">
-            <div class="config-row-info">
-              <strong>Animações reduzidas</strong>
-              <span>Desativa transições e efeitos visuais</span>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" id="toggle-reducao" />
-              <span class="toggle-track"><span class="toggle-thumb"></span></span>
-            </label>
-          </div>
-        </section>
+<!-- Seção Aparência removida -->
 
         <!-- PRIVACIDADE -->
         <section class="config-section card" id="privacidade">
@@ -310,22 +250,14 @@
             </div>
           </div>
 
-          <div class="config-row">
-            <div class="config-row-info">
-              <strong>Exportar meus dados</strong>
-              <span>Baixe uma cópia de todos os seus dados</span>
-            </div>
-            <button class="btn btn-ghost btn-sm" onclick="alert('Funcionalidade em breve!')">
-              <i class="icon-download"></i> Exportar
-            </button>
-          </div>
+<!-- Exportar dados removido -->
 
           <div class="config-row">
             <div class="config-row-info">
               <strong>Desativar conta</strong>
               <span>Sua conta ficará oculta, mas pode ser reativada</span>
             </div>
-            <button class="btn btn-ghost btn-sm btn-danger-soft" onclick="alert('Funcionalidade em breve!')">
+            <button class="btn btn-ghost btn-sm btn-danger-soft" onclick="deactivateAccount()">
               Desativar
             </button>
           </div>
@@ -335,7 +267,7 @@
               <strong>Excluir conta permanentemente</strong>
               <span>Remove todos os seus dados. Esta ação não pode ser desfeita.</span>
             </div>
-            <button class="btn btn-danger" onclick="confirmDelete()">
+            <button class="btn btn-danger" onclick="deleteAccount()">
               <i class="icon-trash-2"></i> Excluir conta
             </button>
           </div>
@@ -344,6 +276,34 @@
       </div>
     </div>
   </main>
+
+  <!-- Modal Alterar Senha -->
+  <div id="password-modal" class="modal">
+    <div class="modal-content" style="max-width: 500px; height: auto; border-radius: 24px; margin: auto; padding: 32px;">
+      <div class="modal-header">
+        <h2>Alterar Senha</h2>
+        <button class="modal-close" onclick="closePasswordModal()"><i class="icon-x"></i></button>
+      </div>
+      <form id="password-form">
+        <div class="form-group">
+          <label for="current-password">Senha Atual</label>
+          <input type="password" id="current-password" required />
+        </div>
+        <div class="form-group">
+          <label for="new-password">Nova Senha</label>
+          <input type="password" id="new-password" required />
+        </div>
+        <div class="form-group">
+          <label for="confirm-new-password">Confirmar Nova Senha</label>
+          <input type="password" id="confirm-new-password" required />
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" onclick="closePasswordModal()">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Atualizar Senha</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script src="js/app.js"></script>
   <script src="js/layout.js"></script>

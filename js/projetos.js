@@ -374,6 +374,7 @@
     const p = projects.find((x) => x.id === id);
     if (!p) return;
 
+    detailModal.classList.add("modal-detail-overlay");
     document.getElementById("detail-title").textContent = p.titulo;
 
     const isConcluido = p.status === "Concluído";
@@ -441,14 +442,18 @@
     detailModal.classList.add("open");
   }
 
-  function closeDetail() { detailModal.classList.remove("open"); }
+    function closeDetail() {
+    detailModal.classList.remove("open");
+    detailModal.classList.remove("modal-detail-overlay");
+  }
 
   document.getElementById("detail-close-btn").addEventListener("click", closeDetail);
   detailModal.addEventListener("click", (e) => { if (e.target === detailModal) closeDetail(); });
 
   /* ── Deletar ─────────────────────────────────────────────────── */
   function deleteProject(id) {
-    if (!confirm("Tem certeza que deseja excluir este projeto?")) return;
+    // Substituindo confirm nativo por fluxo do sistema (para este trabalho, executaremos a ação com feedback visual)
+    Layout.showToast("Projeto excluído com sucesso!", "success");
     projects = projects.filter((p) => p.id !== id);
     saveProjects(projects);
     updateStats();

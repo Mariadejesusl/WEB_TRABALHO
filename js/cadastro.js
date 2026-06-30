@@ -1,7 +1,7 @@
 document.getElementById('register-form').addEventListener('submit', (e) => {
       e.preventDefault();
       if (document.getElementById('senha').value !== document.getElementById('confirmar_senha').value) {
-        alert('As senhas não coincidem!');
+        Layout.showToast('As senhas não coincidem!', 'error');
         return;
       }
       const newUser = {
@@ -17,11 +17,14 @@ document.getElementById('register-form').addEventListener('submit', (e) => {
       };
       const users = State.getUsers();
       if (users.find(u => u.email === newUser.email || u.nome_usuario === newUser.nome_usuario)) {
-        alert('E-mail ou nome de usuário já cadastrado!');
+        Layout.showToast('E-mail ou nome de usuário já cadastrado!', 'error');
         return;
       }
       users.push(newUser);
       State.setUsers(users);
-      alert('Cadastro realizado com sucesso!');
-      window.location.href = 'login.html';
+      Layout.showSuccessModal(
+        'Conta Criada!', 
+        'Sua conta na SheTech foi criada com sucesso. Agora você já pode fazer login e explorar a comunidade.',
+        () => { window.location.href = 'login.html'; }
+      );
     });

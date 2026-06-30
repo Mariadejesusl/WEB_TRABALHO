@@ -85,7 +85,33 @@ const Layout = {
         });
     },
 
-    showToast(msg) {
+    showSuccessModal(title, message, callback) {
+        // Remover modal existente se houver
+        const existing = document.getElementById('global-success-modal');
+        if (existing) existing.remove();
+
+        const modalHtml = `
+            <div id="global-success-modal" class="modal" style="display: flex; background: rgba(14,14,16,0.7); backdrop-filter: blur(8px); z-index: 9999; position: fixed; inset: 0; justify-content: center; align-items: center;">
+                <div class="modal-content" style="max-width: 400px; height: auto; border-radius: 24px; text-align: center; padding: 40px 32px; margin: auto; background: #fff; box-shadow: 0 20px 50px rgba(0,0,0,0.2);">
+                    <div style="width: 80px; height: 80px; background: #e6fffa; color: #38b2ac; border-radius: 50%; display: grid; place-items: center; margin: 0 auto 24px;">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                    <h2 style="font-size: 24px; margin-bottom: 12px; color: #1a1a1f; font-family: 'Sora', sans-serif;">${title}</h2>
+                    <p style="color: #4a4a55; margin-bottom: 32px; line-height: 1.5; font-size: 15px;">${message}</p>
+                    <button id="success-modal-btn" class="btn btn-primary" style="width: 100%; height: 48px; font-size: 16px; border-radius: 12px; background: linear-gradient(135deg,#ff3d8b 0%, #ff7ab0 60%); color: #fff; font-weight: 600;">Continuar</button>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        const btn = document.getElementById('success-modal-btn');
+        btn.onclick = () => {
+            document.getElementById('global-success-modal').remove();
+            if (callback) callback();
+        };
+    },
+
+    showToast(msg, type = 'success') {
         let toast = document.getElementById('toast');
         if (!toast) {
             toast = document.createElement('div');
@@ -93,8 +119,12 @@ const Layout = {
             toast.className = 'toast';
             document.body.appendChild(toast);
         }
+        
+        // Estilização dinâmica baseada no tipo
+        toast.style.background = type === 'error' ? '#ff3d8b' : '#1a1a1f';
         toast.innerText = msg;
         toast.classList.add('show');
+        
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
 };

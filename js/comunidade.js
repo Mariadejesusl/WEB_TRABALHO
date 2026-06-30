@@ -261,10 +261,10 @@ function expandComposer() {
 }
 
 function addLink() {
-  const url = prompt('Cole a URL do link:');
-  if (!url) return;
+  // Para uma experiência sem prompts nativos, abrimos o modal de criação de post com foco no campo
   const field = document.getElementById('composer-field');
-  field.innerText += (field.innerText ? '\n' : '') + url;
+  field.focus();
+  Layout.showToast('Cole o link diretamente no campo de texto 🔗');
 }
 
 function addEmoji() {
@@ -400,10 +400,9 @@ function saveLink(e) {
 }
 
 function deleteLink(id) {
-  if (!confirm('Remover este link?')) return;
   allLinks = allLinks.filter(l => l.id !== id);
-  renderLinks(currentLinkFilter === 'todos' ? null : currentLinkFilter);
-  showToast('Link removido.');
+  renderLinks();
+  showToast('Link removido.', 'success');
 }
 
 /* ─── MEMBERS ─────────────────────────────── */
@@ -489,12 +488,19 @@ function initSearch() {
 
 function openModal(id) {
   const el = document.getElementById(id);
+  if (!el) return;
   el.classList.add('open');
+  if (id === 'comments-modal') {
+    el.classList.add('modal-overlay--detail');
+  }
   document.body.style.overflow = 'hidden';
 }
 
 function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('open');
+  el.classList.remove('modal-overlay--detail');
   document.body.style.overflow = '';
 }
 
@@ -537,9 +543,11 @@ function markAllRead() {
 function postMenu(id) {
   const post = allPosts.find(p => p.id === id);
   const isOwn = post && post.author === CURRENT_USER.name;
-  const action = isOwn
-    ? confirm('Excluir este post?') && deletePost(id)
-    : showToast('Post reportado. Obrigada!', 'success');
+  if (isOwn) {
+    deletePost(id);
+  } else {
+    showToast('Post reportado. Obrigada!', 'success');
+  }
 }
 
 function deletePost(id) {

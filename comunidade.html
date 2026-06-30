@@ -22,7 +22,11 @@
       <a href="links.html" class="nav-item" data-page="links"><i class="icon-link"></i> <span class="nav-label">Links</span></a>
       <a href="configuracoes.html" class="nav-item" data-page="configuracoes"><i class="icon-settings"></i> <span class="nav-label">Configurações</span></a>
     </nav>
-    <div class="sidebar-foot" style="margin-top:auto"></div>
+        <div class="sidebar-foot" style="margin-top:auto; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+      <a href="#" class="nav-item" onclick="State.logout(); window.location.href='login.html';" style="color: var(--pink-2);">
+        <i class="icon-log-out"></i> <span class="nav-label">Sair</span>
+      </a>
+    </div>
   </aside>
 
   <!-- Main -->
@@ -84,21 +88,7 @@
           <h1 class="page-title">Comunidade</h1>
           <p class="page-subtitle">Conecte-se, compartilhe e inspire outras mulheres na tech</p>
         </div>
-        <div class="community-stats">
-          <div class="stat-pill">
-            <span class="stat-num">847</span>
-            <span class="stat-label">membras</span>
-          </div>
-          <div class="stat-pill">
-            <span class="stat-num">124</span>
-            <span class="stat-label">posts hoje</span>
-          </div>
-          <div class="stat-pill online-pill">
-            <span class="online-dot"></span>
-            <span class="stat-num">38</span>
-            <span class="stat-label">online</span>
-          </div>
-        </div>
+<!-- Contadores removidos conforme solicitação -->
       </div>
 
       <!-- Tabs -->
@@ -294,7 +284,7 @@
         <div class="section-header">
           <div>
             <h2>Membros da Comunidade</h2>
-            <p class="section-sub">847 mulheres transformando o mundo da tecnologia</p>
+            <p class="section-sub">Mulheres transformando o mundo da tecnologia</p>
           </div>
           <div class="members-search">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>

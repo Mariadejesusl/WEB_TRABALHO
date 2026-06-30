@@ -8,6 +8,6 @@ document.getElementById('login-form').addEventListener('submit', (e) => {
     State.setCurrentUser(user);
     window.location.href = 'dashboard.html';
   } else {
-    alert('E-mail ou senha incorretos!');
+    Layout.showToast('E-mail ou senha incorretos!', 'error');
   }
 });

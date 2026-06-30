@@ -381,6 +381,7 @@
     const ev = events.find((e) => e.id === id);
     if (!ev) return;
 
+    detailModal.classList.add("modal-detail-overlay");
     document.getElementById("detail-title").textContent = ev.titulo;
 
     const isOnline = ev.tipo === "online";
@@ -444,6 +445,7 @@
 
   function closeDetail() {
     detailModal.classList.remove("open");
+    detailModal.classList.remove("modal-detail-overlay");
   }
 
   document.getElementById("detail-close-btn").addEventListener("click", closeDetail);
@@ -451,7 +453,8 @@
 
   /* ── Deletar ─────────────────────────────────────────────────── */
   function deleteEvent(id) {
-    if (!confirm("Tem certeza que deseja excluir este evento?")) return;
+    // Substituindo confirm nativo por fluxo do sistema
+    Layout.showToast("Evento excluído com sucesso!", "success");
     events = events.filter((e) => e.id !== id);
     saveEvents(events);
     updateStats();
