@@ -131,7 +131,12 @@ function renderFeaturedProjects() {
         <div class="project-row">
             <div class="project-info">
                 <h4 class="project-title">${p.titulo}</h4>
-                <span class="tag-pill">${p.categoria || 'Geral'}</span>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+                    <span class="tag-pill">${p.categoria || 'Geral'}</span>
+                    ${p.status ? `<span class="tag-pill" style="background:var(--pink-soft);color:var(--pink)">${p.status}</span>` : ''}
+                    ${p.progresso ? `<span class="tag-pill" style="background:#e8f5e9;color:#2e7d32">${p.progresso}% pronto</span>` : ''}
+                </div>
+                ${p.descricao ? `<p style="font-size:12px;color:var(--gray-500);margin-top:8px;line-height:1.4">${p.descricao.slice(0, 60)}...</p>` : ''}
             </div>
             <a href="projetos.html" class="icon-btn" style="width:32px;height:32px" title="Ver projeto">
                 <i class="icon-chevron-right"></i>
@@ -140,11 +145,92 @@ function renderFeaturedProjects() {
     `).join('');
 }
 
+/* ── PRÓXIMOS EVENTOS ── */
+function renderUpcomingEvents() {
+    const container = document.getElementById('upcoming-events-list');
+    if (!container) return;
+
+    const events = State.getEvents ? State.getEvents() : [];
+    
+    if (events.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="icon-calendar-plus" style="font-size:28px;color:var(--pink);opacity:.6"></i>
+                <p>Nenhum evento agendado.</p>
+                <a href="eventos.html" class="link">Criar primeiro evento →</a>
+            </div>`;
+        return;
+    }
+
+    container.innerHTML = events.slice(0, 3).map(e => `
+        <div class="event-row">
+            <div class="event-icon" style="width:40px;height:40px;border-radius:10px;background:var(--pink-soft);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                <i class="icon-calendar" style="color:var(--pink);font-size:18px"></i>
+            </div>
+            <div class="event-info" style="flex:1">
+                <h4 style="font-size:14px;font-weight:600;color:var(--ink);margin:0">${e.titulo}</h4>
+                <div style="display:flex;gap:12px;margin-top:4px;font-size:12px;color:var(--gray-500)">
+                    ${e.data ? `<span>📅 ${new Date(e.data).toLocaleDateString('pt-BR')}</span>` : ''}
+                    ${e.horario ? `<span>🕐 ${e.horario}</span>` : ''}
+                </div>
+                ${e.tipo ? `<span class="tag-pill" style="display:inline-block;margin-top:6px;font-size:11px">${e.tipo}</span>` : ''}
+            </div>
+            <a href="eventos.html" class="icon-btn" style="width:32px;height:32px" title="Ver evento">
+                <i class="icon-chevron-right"></i>
+            </a>
+        </div>
+    `).join('');
+}
+
+/* ── ESTATÍSTICAS DE CRIADOR ── */
+function renderCreatorStats() {
+    const container = document.getElementById('creator-stats-container');
+    if (!container) return;
+
+    const projects = State.getProjects ? State.getProjects() : [];
+    const events = State.getEvents ? State.getEvents() : [];
+    const posts = State.getPosts ? State.getPosts() : [];
+
+    const projectsByStatus = {
+        'Planejamento': projects.filter(p => p.status === 'Planejamento').length,
+        'Em Progresso': projects.filter(p => p.status === 'Em Progresso').length,
+        'Concluído': projects.filter(p => p.status === 'Concluído').length
+    };
+
+    const eventsByType = {
+        'Online': events.filter(e => e.tipo === 'Online').length,
+        'Presencial': events.filter(e => e.tipo === 'Presencial').length
+    };
+
+    container.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
+            <div class="stat-mini-card">
+                <div style="font-size:12px;color:var(--gray-500);margin-bottom:6px">Projetos em Progresso</div>
+                <div style="font-size:24px;font-weight:700;color:var(--pink)">${projectsByStatus['Em Progresso']}</div>
+            </div>
+            <div class="stat-mini-card">
+                <div style="font-size:12px;color:var(--gray-500);margin-bottom:6px">Eventos Criados</div>
+                <div style="font-size:24px;font-weight:700;color:var(--pink)">${events.length}</div>
+            </div>
+            <div class="stat-mini-card">
+                <div style="font-size:12px;color:var(--gray-500);margin-bottom:6px">Posts Publicados</div>
+                <div style="font-size:24px;font-weight:700;color:var(--pink)">${posts.length}</div>
+            </div>
+            <div class="stat-mini-card">
+                <div style="font-size:12px;color:var(--gray-500);margin-bottom:6px">Projetos Concluídos</div>
+                <div style="font-size:24px;font-weight:700;color:#4caf50">${projectsByStatus['Concluído']}</div>
+            </div>
+        </div>
+    `;
+}
+
 /* ── INIT ── */
 document.addEventListener('DOMContentLoaded', () => {
     renderWelcome();
     updateDashboardStats();
     renderRecentActivity();
     renderFeaturedProjects();
+    renderUpcomingEvents();
+    renderCreatorStats();
     renderProfileProgress();
 });

@@ -569,6 +569,11 @@ body {
   display: block;
 }
 
+.post-link-preview-wrap {
+  position: relative;
+  margin-bottom: 12px;
+}
+
 .post-link-preview {
   display: flex;
   align-items: center;
@@ -576,7 +581,6 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 12px;
-  margin-bottom: 12px;
   text-decoration: none;
   background: var(--bg);
   transition: background var(--trans);
@@ -593,6 +597,36 @@ body {
 .post-link-icon svg { width: 16px; height: 16px; }
 .post-link-title { font-size: 13px; font-weight: 600; color: var(--text); }
 .post-link-url { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+.post-link-save-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--pink-soft) !important;
+  color: var(--pink) !important;
+  border: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--trans), transform var(--trans);
+  z-index: 10;
+}
+
+.post-link-save-btn:hover {
+  background: var(--pink) !important;
+  color: #fff !important;
+  transform: scale(1.05);
+}
+
+.post-link-save-btn svg {
+  width: 18px;
+  height: 18px;
+}
 
 .post-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
 .post-tag {
