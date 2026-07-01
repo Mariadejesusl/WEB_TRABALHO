@@ -562,8 +562,7 @@
   if (typeof Layout !== 'undefined') {
     Layout.init({ active: 'eventos' });
   }
-  updateStats();
-  renderEvents();
+  loadEventsFromSupabase();
 
   // Abrir detalhe se houver ID na URL
   const urlParams = new URLSearchParams(window.location.search);

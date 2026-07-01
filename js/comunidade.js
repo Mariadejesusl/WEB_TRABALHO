@@ -23,6 +23,82 @@ let activePostId  = null;
 let nextLinkId    = 1;
 let nextPostId    = 1;
 
+/* ─── MAPEAMENTO DE USUÁRIOS PARA MEMBROS ─── */
+
+/**
+ * Converte um objeto de usuário (formato salvo em State/localStorage ou Supabase)
+ * para o formato esperado pelos cards de membros da comunidade.
+ */
+function mapUserToMember(user, index) {
+  return {
+    id:     user.id     || (user.email ? user.email.replace(/[^a-zA-Z0-9]/g, '') : index + 1),
+    name:   user.nome_completo || user.nome_usuario || 'Membro SheTech',
+    role:   user.cargo  || user.area || 'Membro SheTech',
+    avatar: user.foto_perfil || 'assets/avatars/avatar.svg',
+    skills: Array.isArray(user.habilidades) ? user.habilidades : [],
+    online: true, // Simula online para todos na demo
+    email:  user.email  || '',
+    bio:    user.bio    || user.biografia || ''
+  };
+}
+
+/**
+ * Carrega os membros da comunidade.
+ * Prioridade:
+ *  1. Usuários registrados no Supabase (via listagem de usuários autenticados)
+ *  2. Usuários salvos no localStorage (State.getUsers())
+ * O usuário atual logado é incluído mas marcado visualmente.
+ */
+async function loadMembers() {
+  const grid = document.getElementById('members-grid');
+  if (grid) grid.innerHTML = '<p style="color:var(--gray-500);padding:20px;">Carregando membros...</p>';
+
+  let members = [];
+
+  try {
+    const client = window.SupabaseAuth && window.SupabaseAuth.client;
+    if (client) {
+      const { data: users, error } = await client
+        .from('users')
+        .select('*')
+        .limit(100);
+
+      if (!error && users && users.length > 0) {
+        members = users.map((u, i) => mapUserToMember(u, i));
+      }
+    }
+  } catch (err) {
+    console.warn('[Comunidade] Não foi possível buscar membros do Supabase:', err);
+  }
+
+  if (members.length === 0) {
+    const localUsers = State.getUsers ? State.getUsers() : [];
+    members = localUsers.map((u, i) => mapUserToMember(u, i));
+  }
+
+  const currentUser = State.getCurrentUser();
+  if (currentUser) {
+    const alreadyIn = members.some(m => m.email === currentUser.email);
+    if (!alreadyIn) members.unshift(mapUserToMember(currentUser, -1));
+  }
+
+  allMembers = members;
+  renderMembers();
+
+  const countEl = document.getElementById('members-count');
+  if (countEl) countEl.textContent = allMembers.length > 0 ? `(${allMembers.length})` : '';
+}
+
+async function loadPosts() {
+  if (typeof State !== 'undefined' && State.fetchGlobalData) {
+    const globalPosts = await State.fetchGlobalData('posts');
+    if (globalPosts && globalPosts.length > 0) {
+      allPosts = globalPosts;
+      renderFeed();
+    }
+  }
+}
+
 /* ─── INIT ────────────────────────────────── */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -45,7 +121,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderFeed();
   renderLinks();
-  renderMembers();
+  loadMembers();
+  loadPosts();
   initSearch();
   document.querySelectorAll('.tabs .tab').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -153,32 +230,39 @@ function toggleLike(postId, btn) {
   document.getElementById(`likes-${postId}`).textContent = post.likes;
 }
 
-function createPost() {
+async function createPost() {
   const field = document.getElementById('composer-field');
   const text = field.innerText.trim();
   if (!text) { showToast('Escreva algo antes de publicar.', 'error'); return; }
 
+  const user = State.getCurrentUser();
   const imgEl = document.getElementById('preview-img');
   const hasImg = document.getElementById('media-preview').style.display !== 'none';
 
   const post = {
-    id: nextPostId++,
-    author: CURRENT_USER.name,
-    role: CURRENT_USER.role,
-    avatar: CURRENT_USER.avatar,
+    id: Date.now(),
+    author: user ? user.nome_completo : 'Membro SheTech',
+    role: user ? (user.cargo || user.area || 'Membro') : 'Membro',
+    avatar: user ? (user.foto_perfil || 'assets/avatars/avatar.svg') : 'assets/avatars/avatar.svg',
     time: 'Agora mesmo',
     text,
     tags: [],
     likes: 0,
     comments: 0,
     liked: false,
-    image: hasImg ? imgEl.src : null
+    image: hasImg ? imgEl.src : null,
+    createdAt: new Date().toISOString()
   };
 
   allPosts.unshift(post);
   field.innerText = '';
   clearMedia();
   renderFeed();
+  
+  if (typeof State !== 'undefined' && State.saveGlobalData) {
+    await State.saveGlobalData('posts', post);
+  }
+  
   showToast('Post publicado! 🎉', 'success');
 }
 
@@ -551,23 +635,100 @@ let memberRoleFilter = 'todos';
 
 function renderMembers(list) {
   const grid = document.getElementById('members-grid');
+  if (!grid) return;
   const data = list || allMembers;
+  if (data.length === 0) {
+    grid.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: var(--gray-500);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;margin-bottom:12px;opacity:0.4;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <p style="font-size:15px;font-weight:600;margin-bottom:6px;">Nenhum membro encontrado</p>
+        <p style="font-size:13px;">Convide colegas para se cadastrarem na plataforma!</p>
+      </div>`;
+    return;
+  }
   grid.innerHTML = data.map(m => memberCardHTML(m)).join('');
+  renderActiveMembers();
+}
+
+function renderActiveMembers() {
+  const activeGrid = document.querySelector('.active-members');
+  if (!activeGrid) return;
+  
+  const currentUser = State.getCurrentUser();
+  // Exibe outros membros como "ativos" para dar vida à comunidade
+  const otherMembers = allMembers.filter(m => m.email !== (currentUser ? currentUser.email : ''));
+  
+  // Adiciona o próprio usuário no topo se estiver logado
+  let html = '';
+  if (currentUser) {
+    html += `
+      <div class="active-member" onclick="window.location.href='perfil.html'">
+        <div class="member-thumb-wrap">
+          <img src="${currentUser.foto_perfil || 'assets/avatars/avatar.svg'}" alt="Você">
+          <span class="online-indicator"></span>
+        </div>
+        <div>
+          <span class="active-name">Você</span>
+          <span class="active-role">${currentUser.cargo || 'Membro'}</span>
+        </div>
+        <span style="font-size:10px;color:var(--gray-400);margin-left:auto;">Online</span>
+      </div>
+    `;
+  }
+
+  if (otherMembers.length === 0 && !currentUser) {
+    activeGrid.innerHTML = '<p style="font-size:12px;color:var(--gray-500);padding:10px;">Nenhum membro online.</p>';
+    return;
+  }
+
+  html += otherMembers.slice(0, 5).map(m => `
+    <div class="active-member" onclick="viewProfile('${m.id}')">
+      <div class="member-thumb-wrap">
+        <img src="${m.avatar}" alt="${m.name}">
+        <span class="online-indicator"></span>
+      </div>
+      <div>
+        <span class="active-name">${m.name}</span>
+        <span class="active-role">${m.role}</span>
+      </div>
+      <button class="follow-mini-btn" onclick="event.stopPropagation(); followUser(this)">Seguir</button>
+    </div>
+  `).join('');
+
+  activeGrid.innerHTML = html;
+}
+
+function followUser(btn) {
+  const isFollowing = btn.classList.contains('following');
+  if (isFollowing) {
+    btn.classList.remove('following');
+    btn.textContent = 'Seguir';
+    btn.style.background = 'var(--pink-soft)';
+    btn.style.color = 'var(--pink)';
+  } else {
+    btn.classList.add('following');
+    btn.textContent = 'Seguindo';
+    btn.style.background = 'var(--gray-100)';
+    btn.style.color = 'var(--gray-500)';
+  }
 }
 
 function memberCardHTML(m) {
+  const currentUser = State.getCurrentUser();
+  const isMe = currentUser && (m.email === currentUser.email || m.id === currentUser.id);
+  
   return `
   <div class="member-card" id="member-${m.id}">
     <div class="member-avatar-wrap">
       <img src="${m.avatar}" alt="${m.name}" />
-      ${m.online ? '<span class="online-indicator"></span>' : ''}
+      ${m.online || isMe ? '<span class="online-indicator"></span>' : ''}
     </div>
-    <div class="member-card-name">${m.name}</div>
+    <div class="member-card-name">${m.name} ${isMe ? '<span style="font-size:10px;color:var(--pink);background:var(--pink-soft);padding:2px 6px;border-radius:10px;margin-left:4px;">Você</span>' : ''}</div>
     <div class="member-card-role">${m.role}</div>
     <div class="member-card-skills">
       ${m.skills.map(s => `<span class="skill-tag">${s}</span>`).join('')}
     </div>
-    <button class="member-card-follow" onclick="followMember(${m.id}, this)">Seguir</button>
+    ${isMe ? '' : `<button class="member-card-follow" onclick="followMember('${m.id}', this)">Seguir</button>`}
   </div>`;
 }
 

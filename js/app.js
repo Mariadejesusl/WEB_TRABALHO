@@ -96,9 +96,13 @@ const State = {
         const users = this.getData('users');
         const idx = users.findIndex(u => u.email === user.email);
         if (idx !== -1) {
-            users[idx] = user;
-            localStorage.setItem('users', JSON.stringify(users));
+            // Atualiza o usuário existente na lista
+            users[idx] = { ...users[idx], ...user };
+        } else {
+            // Adiciona o usuário à lista caso seja o primeiro login (veio do Supabase)
+            users.push({ ...user, createdAt: user.createdAt || new Date().toISOString() });
         }
+        localStorage.setItem('users', JSON.stringify(users));
     },
 
     logout() {
@@ -106,8 +110,49 @@ const State = {
         window.location.href = 'login.html';
     },
 
-    getProjects() { return this.getData('projects'); },
-    getEvents() { return this.getData('events'); },
+    // Métodos para o Supabase (Sincronização Global)
+    async fetchGlobalData(table) {
+        if (!window.SupabaseAuth || !window.SupabaseAuth.client) return [];
+        const { data, error } = await window.SupabaseAuth.client
+            .from(table)
+            .select('*')
+            .order('createdAt', { ascending: false });
+        if (error) {
+            console.error(`Erro ao buscar ${table}:`, error);
+            return this.getData(table); // Fallback para local
+        }
+        return data || [];
+    },
+
+    async saveGlobalData(table, item) {
+        if (!window.SupabaseAuth || !window.SupabaseAuth.client) {
+            this.saveData(table, item);
+            return;
+        }
+        
+        const user = this.getCurrentUser();
+        const dataToSave = {
+            ...item,
+            createdAt: item.createdAt || new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            author_id: user ? user.id : null,
+            author_email: user ? user.email : null
+        };
+
+        const { data, error } = await window.SupabaseAuth.client
+            .from(table)
+            .upsert(dataToSave)
+            .select();
+
+        if (error) {
+            console.error(`Erro ao salvar em ${table}:`, error);
+            this.saveData(table, item); // Fallback para local
+        }
+        return data;
+    },
+
+    getProjects() { return this.getData('shetech_projetos'); },
+    getEvents() { return this.getData('shetech_eventos'); },
     getPosts() { return this.getData('posts'); },
     getUsers() { return this.getData('users'); },
     setUsers(users) { localStorage.setItem('users', JSON.stringify(users)); },

@@ -289,6 +289,14 @@ document.getElementById('edit-profile-form').addEventListener('submit', (e) => {
     };
 
     State.setCurrentUser(updatedUser);
+    
+    // Salva no Supabase para visibilidade global
+    if (window.SupabaseAuth?.client) {
+      window.SupabaseAuth.client.from('users').upsert(updatedUser).then(({ error }) => {
+        if (error) console.error('Erro ao sincronizar perfil com Supabase:', error);
+      });
+    }
+
     Layout.showToast('Perfil atualizado com sucesso! ✨');
     setTimeout(() => window.location.href = 'perfil.html', 1100);
 });

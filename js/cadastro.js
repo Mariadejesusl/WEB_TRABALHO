@@ -43,7 +43,14 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
         }
 
         if (data?.user) {
-          State.setUsers([...State.getUsers(), { ...newUser, id: data.user.id }]);
+          const userWithId = { ...newUser, id: data.user.id };
+          State.setUsers([...State.getUsers(), userWithId]);
+          
+          // Salva na tabela 'users' para visibilidade global
+          if (window.SupabaseAuth?.client) {
+            const { senha, ...userToSave } = userWithId;
+            await window.SupabaseAuth.client.from('users').upsert(userToSave);
+          }
         }
 
         const message = data?.session

@@ -539,8 +539,7 @@
   if (typeof Layout !== 'undefined') {
     Layout.init({ active: 'projetos' });
   }
-  updateStats();
-  renderProjects();
+  loadProjectsFromSupabase();
 
   // Abrir detalhe se houver ID na URL
   const urlParams = new URLSearchParams(window.location.search);
