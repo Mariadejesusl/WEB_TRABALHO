@@ -51,6 +51,7 @@
         categoria: "Meetup",
         descricao:
           "Vamos conversar sobre as melhores práticas de pesquisa com usuários e como aplicar no dia a dia de produto.",
+        inscritos: ["Ana Luiza", "Carla Mendes", "Bia Torres", "Julia Costa"],
       },
       {
         id: uid(),
@@ -62,6 +63,7 @@
         horario: "14:00",
         categoria: "Workshop",
         descricao: "Componentes, auto layout e prototipagem de alta fidelidade.",
+        inscritos: ["Bia Torres", "Mariana Lima"],
       },
       {
         id: uid(),
@@ -73,6 +75,7 @@
         horario: "09:00",
         categoria: "Hackathon",
         descricao: "48 horas de inovação focadas em tecnologia para causas sociais.",
+        inscritos: ["Ana Luiza", "Julia Costa", "Sofia Andrade", "Leticia Rocha", "Fernanda Cruz"],
       },
       {
         id: uid(),
@@ -84,6 +87,7 @@
         horario: "18:30",
         categoria: "Palestra",
         descricao: "Como contribuir com projetos open source e construir reputação na comunidade.",
+        inscritos: ["Carla Mendes", "Renata Faria"],
       },
     ];
     saveEvents(events);
@@ -391,6 +395,19 @@
       ? `<a href="${ev.link}" target="_blank" rel="noopener">${ev.link}</a>`
       : `<span>${ev.endereco}</span>`;
 
+    const inscritos = ev.inscritos || [];
+    const inscritosHTML = inscritos.length > 0
+      ? `<div class="detail-row">
+          <div class="detail-row-icon"><i class="icon-users"></i></div>
+          <div class="detail-row-content">
+            <strong>Inscritos (${inscritos.length})</strong>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+              ${inscritos.map(m => `<span style="background:var(--pink-soft);color:var(--pink);padding:4px 12px;border-radius:12px;font-size:13px">${m}</span>`).join('')}
+            </div>
+          </div>
+        </div>`
+      : '';
+
     document.getElementById("detail-body").innerHTML = `
       <div class="detail-section">
         <div class="detail-row">
@@ -416,6 +433,7 @@
             <span>${ev.categoria} • ${isOnline ? "Online" : "Presencial"}</span>
           </div>
         </div>
+        ${inscritosHTML}
         ${
           ev.descricao
             ? `<div class="detail-row">

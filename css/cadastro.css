@@ -1,10 +1,14 @@
 /* ====== AUTH PAGES ====== */
-body.auth-page{display:block;background:var(--bg);min-height:100vh}
-.auth-header{display:none}
+body.auth-page{display:flex;flex-direction:column;background:var(--bg);min-height:100vh}
+.auth-header-top{background:#1a1a1a;padding:16px 0;box-shadow:0 2px 8px rgba(0,0,0,0.1);position:sticky;top:0;z-index:1000}
+.auth-header-container{max-width:1200px;margin:0 auto;padding:0 20px;display:flex;align-items:center}
+.auth-logo{display:flex;align-items:center;gap:12px;cursor:pointer;text-decoration:none;color:#fff;font-weight:bold;font-size:18px;transition:opacity 0.3s}
+.auth-logo-img{width:40px;height:40px;object-fit:contain}
+.auth-logo:hover{opacity:0.8}
 .checkbox-label{display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer}
 .checkbox-label input[type="checkbox"]{width:auto;margin:0}
-.auth-wrap{max-width:420px;margin:48px auto;padding:0 20px 60px}
-.auth-card{background:#fff;border:1px solid var(--gray-200);border-radius:20px;padding:36px;box-shadow:var(--shadow)}
+.auth-wrap{flex:1;display:flex;align-items:center;justify-content:center;max-width:420px;margin:0 auto;padding:40px 20px;width:100%}
+.auth-card{background:#fff;border:1px solid var(--gray-200);border-radius:20px;padding:36px;box-shadow:var(--shadow);width:100%}
 .auth-card h2{font-size:24px;text-align:center;margin-bottom:24px}
 .auth-card p{text-align:center;margin-top:16px;font-size:14px;color:var(--gray-500)}
 .auth-card a{color:var(--pink);font-weight:600}

@@ -40,6 +40,7 @@
         demo: "",
         tecnologias: ["React Native", "Firebase", "Figma"],
         descricao: "Aplicativo para controle de gastos pessoais com gráficos e metas mensais. Foco em usuárias iniciantes em finanças.",
+        membros: ["Ana Luiza", "Carla Mendes", "Bia Torres"],
       },
       {
         id: uid(),
@@ -51,6 +52,7 @@
         demo: "",
         tecnologias: ["Python", "Pandas", "Streamlit"],
         descricao: "Painel interativo para visualização de indicadores de saúde pública com foco em gênero.",
+        membros: ["Julia Costa"],
       },
       {
         id: uid(),
@@ -62,6 +64,7 @@
         demo: "https://anadev.vercel.app",
         tecnologias: ["Next.js", "Tailwind CSS"],
         descricao: "Site portfólio responsivo com projetos, blog e formulário de contato.",
+        membros: ["Ana Luiza", "Mariana Lima"],
       },
       {
         id: uid(),
@@ -73,6 +76,7 @@
         demo: "https://www.figma.com/file/exemplo",
         tecnologias: ["Figma", "Tokens Studio"],
         descricao: "Sistema de componentes visual e de marca para toda a plataforma SheTech.",
+        membros: ["Bia Torres", "Tatiana Alves"],
       },
     ];
     saveProjects(projects);
@@ -383,6 +387,19 @@
       .map((t) => `<span class="tech-pill">${t}</span>`)
       .join("") || "<span style='color:var(--gray-500);font-size:14px'>Nenhuma tecnologia informada</span>";
 
+    const membros = p.membros || [];
+    const membrosHTML = membros.length > 0
+      ? `<div class="detail-row">
+          <div class="detail-row-icon"><i class="icon-users"></i></div>
+          <div class="detail-row-content">
+            <strong>Membros (${membros.length})</strong>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+              ${membros.map(m => `<span style="background:var(--pink-soft);color:var(--pink);padding:4px 12px;border-radius:12px;font-size:13px">${m}</span>`).join('')}
+            </div>
+          </div>
+        </div>`
+      : '';
+
     document.getElementById("detail-body").innerHTML = `
       <div class="detail-section">
         <div class="detail-row">
@@ -404,6 +421,8 @@
             </div>
           </div>
         </div>
+
+        ${membrosHTML}
 
         <div class="detail-row">
           <div class="detail-row-icon"><i class="icon-cpu"></i></div>

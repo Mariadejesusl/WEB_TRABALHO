@@ -170,15 +170,20 @@ function postHTML(post) {
     ${post.image ? `<img src="${post.image}" class="post-image" alt="imagem do post" />` : ''}
     
     ${post.link ? `
-    <a href="https://${post.link.url}" target="_blank" class="post-link-preview">
-      <div class="post-link-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-      </div>
-      <div>
-        <div class="post-link-title">${post.link.title}</div>
-        <div class="post-link-url">${post.link.url}</div>
-      </div>
-    </a>` : ''}
+    <div class="post-link-preview-wrap">
+      <a href="https://${post.link.url}" target="_blank" class="post-link-preview">
+        <div class="post-link-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        </div>
+        <div>
+          <div class="post-link-title">${post.link.title}</div>
+          <div class="post-link-url">${post.link.url}</div>
+        </div>
+      </a>
+      <button class="post-link-save-btn" onclick="savePostLinkToMyLinks('${post.link.title}', '${post.link.url}', event)" title="Salvar link" style="background:var(--pink-soft);color:var(--pink);border:none;border-radius:8px;padding:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      </button>
+    </div>` : ''}
 
     <div class="post-footer">
       <button class="reaction-btn ${post.liked ? 'liked' : ''}" onclick="toggleLike(${post.id}, this)">
@@ -273,11 +278,17 @@ function addEmoji() {
     const existing = document.getElementById('emoji-picker-modal');
     if (existing) { existing.remove(); return; }
 
+    const emojiBtn = event.target.closest('button');
+    const rect = emojiBtn ? emojiBtn.getBoundingClientRect() : null;
+    
+    const top = rect ? (rect.top - 320) + 'px' : '50%';
+    const left = rect ? (rect.left - 100) + 'px' : '50%';
+
     const modalHtml = `
         <div id="emoji-picker-modal" class="modal modal-detail-overlay" style="display: flex; z-index: 10001; background: transparent;">
-            <div class="modal-content" style="max-width: 300px; height: auto; position: absolute; bottom: 80px; left: 20px; padding: 15px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+            <div class="modal-content" style="max-width: 300px; height: auto; position: fixed; top: ${top}; left: ${left}; padding: 15px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); background: white;">
                 <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;">
-                    ${emojis.map(e => `<button onclick="insertEmoji('${e}')" style="font-size: 20px; padding: 5px; border-radius: 8px; transition: background 0.2s;" onmouseover="this.style.background='var(--pink-soft)'" onmouseout="this.style.background='transparent'">${e}</button>`).join('')}
+                    ${emojis.map(e => `<button onclick="insertEmoji('${e}')" style="font-size: 20px; padding: 5px; border-radius: 8px; transition: background 0.2s; border: none; background: transparent; cursor: pointer;" onmouseover="this.style.background='var(--pink-soft)'" onmouseout="this.style.background='transparent'">${e}</button>`).join('')}
                 </div>
             </div>
         </div>
@@ -295,6 +306,62 @@ function insertEmoji(emoji) {
     field.innerText += emoji;
     field.focus();
     document.getElementById('emoji-picker-modal')?.remove();
+}
+
+function savePostLinkToMyLinks(title, url, event) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const user = State.getCurrentUser();
+    if (!user) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    const folders = State.getFolders(user.email);
+    
+    const modalHtml = `
+        <div id="save-link-modal" class="modal modal-detail-overlay" style="display: flex; z-index: 10000;">
+            <div class="modal-content" style="max-width: 400px; height: auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>Salvar nos Meus Links</h2>
+                    <button onclick="document.getElementById('save-link-modal').remove()" style="font-size: 24px; background: none; border: none; cursor: pointer;">&times;</button>
+                </div>
+                <p style="margin-bottom: 15px; font-size: 14px; color: var(--gray-700);">Escolha uma pasta para salvar: <strong>${title}</strong></p>
+                <div class="form-group">
+                    <label>Pasta</label>
+                    <select id="save-folder-select" class="form-control" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--gray-300);">
+                        <option value="">Nenhuma pasta (Geral)</option>
+                        ${folders.map(f => `<option value="${f.id}">${f.nome}</option>`).join('')}
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button onclick="confirmSavePostLink('${title}', '${url}')" class="btn btn-primary" style="flex: 1;">Salvar</button>
+                    <button onclick="document.getElementById('save-link-modal').remove()" class="btn btn-outline" style="flex: 1;">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function confirmSavePostLink(title, url) {
+    const folderId = document.getElementById('save-folder-select').value;
+    const user = State.getCurrentUser();
+    
+    const linkData = {
+        titulo: title,
+        url: url.startsWith('http') ? url : `https://${url}`,
+        descricao: '',
+        categoria: 'Comunidade',
+        folderId: folderId ? parseInt(folderId) : null,
+        proprietaria_id: user.email,
+        favorito: false
+    };
+    
+    State.saveLink(linkData);
+    showToast(`Link "${title}" salvo em Meus Links!`, 'success');
+    document.getElementById('save-link-modal').remove();
 }
 
 /* ─── COMMENTS MODAL ──────────────────────── */
