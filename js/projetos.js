@@ -172,8 +172,16 @@
     });
 
     // Menu de opções
+    const user = typeof Layout !== 'undefined' ? Layout.init({ requireAuth: false }) : null;
+    const userEmail = user ? user.email : 'anonimo';
+    const isOwner = p.criador_id === userEmail || p.proprietaria_id === userEmail;
+
     const menuBtn = card.querySelector(".project-card-menu-btn");
     const dropdown = card.querySelector(".card-dropdown");
+
+    if (!isOwner) {
+      menuBtn.style.display = 'none';
+    }
 
     menuBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -304,14 +312,34 @@
 
     if (!titulo) { showToast("Informe o título do projeto.", "error"); return; }
 
+    const user = typeof Layout !== 'undefined' ? Layout.init({ requireAuth: false }) : null;
+    const userEmail = user ? user.email : 'anonimo';
+
     if (editingId) {
       const idx = projects.findIndex((p) => p.id === editingId);
       if (idx !== -1) {
+        // Apenas o criador pode editar
+        if (projects[idx].criador_id && projects[idx].criador_id !== userEmail) {
+          showToast("Você não tem permissão para editar este projeto.", "error");
+          return;
+        }
         projects[idx] = { ...projects[idx], titulo, categoria, status, progresso, repo, demo, descricao, tecnologias: [...techTags] };
         showToast("Projeto atualizado!", "success");
       }
     } else {
-      projects.push({ id: uid(), titulo, categoria, status, progresso, repo, demo, descricao, tecnologias: [...techTags] });
+      projects.push({ 
+        id: uid(), 
+        titulo, 
+        categoria, 
+        status, 
+        progresso, 
+        repo, 
+        demo, 
+        descricao, 
+        tecnologias: [...techTags],
+        criador_id: userEmail,
+        proprietaria_id: userEmail
+      });
       showToast("Projeto criado com sucesso!", "success");
     }
 
@@ -412,8 +440,22 @@
       </div>
     `;
 
-    document.getElementById("detail-edit-btn").onclick = () => { closeDetail(); openModal(id); };
-    document.getElementById("detail-delete-btn").onclick = () => { closeDetail(); deleteProject(id); };
+    const user = typeof Layout !== 'undefined' ? Layout.init({ requireAuth: false }) : null;
+    const userEmail = user ? user.email : 'anonimo';
+    const isOwner = p.criador_id === userEmail || p.proprietaria_id === userEmail;
+
+    const editBtn = document.getElementById("detail-edit-btn");
+    const deleteBtn = document.getElementById("detail-delete-btn");
+
+    if (isOwner) {
+      editBtn.style.display = 'flex';
+      deleteBtn.style.display = 'flex';
+      editBtn.onclick = () => { closeDetail(); openModal(id); };
+      deleteBtn.onclick = () => { closeDetail(); deleteProject(id); };
+    } else {
+      editBtn.style.display = 'none';
+      deleteBtn.style.display = 'none';
+    }
 
     detailModal.classList.add("open");
   }

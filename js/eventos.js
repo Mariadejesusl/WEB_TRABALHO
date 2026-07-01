@@ -207,8 +207,16 @@
     });
 
     // Menu de opções
+    const user = typeof Layout !== 'undefined' ? Layout.init({ requireAuth: false }) : null;
+    const userEmail = user ? user.email : 'anonimo';
+    const isOwner = ev.criador_id === userEmail || ev.organizador_id === userEmail;
+
     const menuBtn = card.querySelector(".event-card-menu-btn");
     const dropdown = card.querySelector(".card-dropdown");
+
+    if (!isOwner) {
+      menuBtn.style.display = 'none';
+    }
 
     menuBtn.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -311,14 +319,34 @@
     if (tipo === "online" && !link) { showToast("Cole o link da reunião online.", "error"); return; }
     if (tipo === "presencial" && !endereco) { showToast("Informe o endereço do evento.", "error"); return; }
 
+    const user = typeof Layout !== 'undefined' ? Layout.init({ requireAuth: false }) : null;
+    const userEmail = user ? user.email : 'anonimo';
+
     if (editingId) {
       const idx = events.findIndex((e) => e.id === editingId);
       if (idx !== -1) {
+        // Apenas o criador pode editar
+        if (events[idx].criador_id && events[idx].criador_id !== userEmail) {
+          showToast("Você não tem permissão para editar este evento.", "error");
+          return;
+        }
         events[idx] = { ...events[idx], titulo, tipo, link, endereco, data, horario, categoria, descricao };
         showToast("Evento atualizado com sucesso!", "success");
       }
     } else {
-      events.push({ id: uid(), titulo, tipo, link, endereco, data, horario, categoria, descricao });
+      events.push({ 
+        id: uid(), 
+        titulo, 
+        tipo, 
+        link, 
+        endereco, 
+        data, 
+        horario, 
+        categoria, 
+        descricao,
+        criador_id: userEmail,
+        organizador_id: userEmail
+      });
       showToast("Evento criado com sucesso!", "success");
     }
 
@@ -435,15 +463,22 @@
       </div>
     `;
 
-    document.getElementById("detail-edit-btn").onclick = () => {
-      closeDetail();
-      openModal(id);
-    };
+        const user = typeof Layout !== 'undefined' ? Layout.init({ requireAuth: false }) : null;
+    const userEmail = user ? user.email : 'anonimo';
+    const isOwner = ev.criador_id === userEmail || ev.organizador_id === userEmail;
 
-    document.getElementById("detail-delete-btn").onclick = () => {
-      closeDetail();
-      deleteEvent(id);
-    };
+    const editBtn = document.getElementById("detail-edit-btn");
+    const deleteBtn = document.getElementById("detail-delete-btn");
+
+    if (isOwner) {
+      editBtn.style.display = 'flex';
+      deleteBtn.style.display = 'flex';
+      editBtn.onclick = () => { closeDetail(); openModal(id); };
+      deleteBtn.onclick = () => { closeDetail(); deleteEvent(id); };
+    } else {
+      editBtn.style.display = 'none';
+      deleteBtn.style.display = 'none';
+    }
 
     detailModal.classList.add("open");
   }
